@@ -129,11 +129,6 @@ class _MyApp extends State<MyApp> {
   ];
 }
 
-class Home extends StatefulWidget {
-  @override
-  _HomeState createState() => _HomeState();
-}
-
 //선택한 동물 데이터
 class Animal {
   int animalNumber; //동물 번호(0: 북극곰, 1: 코끼리, 2: 뱅갈호랑이, 3: 치타)
@@ -157,7 +152,7 @@ class Happiness {
   Happiness(this.point);
 }
 
-//하루가 지났는지 확인
+//하루가 지났는지 확인하고, 챌린지 및 행복지수 리셋을 위한 데이터
 class UpdateDay {
   bool update = false;
   int count = 6;
@@ -169,8 +164,13 @@ class UpdateDay {
 
 UpdateDay updateDay = new UpdateDay();
 
+class Home extends StatefulWidget {
+  @override
+  _HomeState createState() => _HomeState();
+}
+
 class _HomeState extends State<Home> {
-  //웃는 동물 사진 리스트(사진 변경 시 jpg, png 유의!)
+  //웃는 동물 사진 리스트
   var happyAnimalList = [
     'assets/happyAnimal0.png',
     'assets/happyAnimal1.png',
@@ -178,7 +178,7 @@ class _HomeState extends State<Home> {
     'assets/happyAnimal3.png'
   ];
 
-  //우는 동물 사진 리스트(사진 변경 시 jpg, png 유의!)
+  //우는 동물 사진 리스트
   var sadAnimalList = [
     'assets/sadAnimal0.png',
     'assets/sadAnimal1.png',
@@ -203,8 +203,7 @@ class _HomeState extends State<Home> {
             SizedBox(
               height: 50,
             ),
-            StreamBuilder<QuerySnapshot>(
-              //행복지수, 동물 그림
+            StreamBuilder<QuerySnapshot>( //행복지수, 동물 그림
               stream: Firestore.instance.collection('userData').snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
@@ -217,8 +216,7 @@ class _HomeState extends State<Home> {
                 );
               },
             ),
-            RaisedButton(
-              // Week Challenge 버튼
+            RaisedButton( // Week Challenge 버튼
               child: Text('Daily Challenge',
                   style: TextStyle(fontSize: 20.0, color: Colors.white)),
               color: Colors.lightGreen,
@@ -235,7 +233,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  //행복 지수, 동물 그림 위젯
+  //행복 지수, 동물 그림 버튼 위젯
   Widget _buildItemWidget(DocumentSnapshot doc) {
     final happiness = Happiness(doc['point']);
     final animal = Animal(doc['animalNumber']);
@@ -244,6 +242,7 @@ class _HomeState extends State<Home> {
     updateDay.dt = new DateTime.fromMillisecondsSinceEpoch(
         doc['updateTime'].seconds * 1000);
 
+    //하루가 지났을 경우, 날짜 변경 시간을 다음 날로 업데이트
     if (now.isAfter(updateDay.dt)) {
       Firestore.instance
           .collection('userData')
@@ -258,10 +257,12 @@ class _HomeState extends State<Home> {
           .collection('userData')
           .document(doc.documentID)
           .updateData({'updateTime': Timestamp(up, 0)});
+
+      //후에 challenge 화면 불러올 때 초기화 해야함을 표시
       updateDay.update = true;
     }
 
-    if (happiness.point < 100) {
+    if (happiness.point < 100) { //행복지수가 100 미만일 때 슬픈 동물 사진 보이기
       return Column(
         children: <Widget>[
           Row(
@@ -279,10 +280,10 @@ class _HomeState extends State<Home> {
             sadAnimalList[animal.animalNumber],
             height: 400,
             width: 300,
-          )
+          ),
         ],
       );
-    } else {
+    } else {  //행복지수가 100 이상일 때 행복한 동물 사진 보이기
       return Column(
         children: <Widget>[
           Row(
@@ -300,7 +301,7 @@ class _HomeState extends State<Home> {
             happyAnimalList[animal.animalNumber],
             height: 400,
             width: 300,
-          )
+          ),
         ],
       );
     }
@@ -367,6 +368,7 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
     final challenge = Challenge(doc['title'], doc['point'], doc['iconNumber'],
         clear: doc['clear']);
 
+    //하루가 지났을 경우, 챌린지의 clear를 false로 초기화
     if (updateDay.update) {
       updateDay.count--;
       if (updateDay.count == 0) {
@@ -380,7 +382,8 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
       challenge.clear = doc['clear'];
     }
 
-    Future updateChallenge() async {
+    //챌린지를 클리어 했다고 'ok'를 누를 경우 실행하는 함수
+    Future clearChallenge() async {
       Firestore.instance
           .collection('challenge')
           .document(doc.documentID)
@@ -403,21 +406,45 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
       return InkWell(
           //챌린지 클리어한 경우
           onTap: () {
-            showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                      title: Text('이미 완료한 챌린지입니다!'),
-                      content: Text('Ok를 눌러 창을 닫아주세요.'),
-                      actions: <Widget>[
-                        FlatButton(
-                            child: Text('Ok'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            })
-                      ]);
-                });
+            var now = new DateTime.now();
+            if (now.isAfter(updateDay.dt)) { //하루가 지난 경우
+              showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                        title: Text('하루가 지났습니다!'),
+                        content: Text('ok를 누르면 홈 화면으로 돌아갑니다.'),
+                        actions: <Widget>[
+                          FlatButton(
+                              child: Text('Ok'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pop();
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => MyApp()));
+                              })
+                        ]);
+                  });
+            } else { //하루가 지나지 않은 경우
+              showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                        title: Text('이미 완료한 챌린지입니다!'),
+                        content: Text('Ok를 눌러 창을 닫아주세요.'),
+                        actions: <Widget>[
+                          FlatButton(
+                              child: Text('Ok'),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              })
+                        ]);
+                  });
+            }
           },
           child: Padding(
             padding: const EdgeInsets.all(8.0),
@@ -462,84 +489,60 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
       return InkWell(
         //챌린지 클리어하지 않은 경우
         onTap: () {
-          var now = new DateTime.now();
-          if (now.isAfter(updateDay.dt)) {
-            showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                      title: Text('하루가 지났습니다!'),
-                      content: Text('ok를 누르면 홈 화면으로 돌아갑니다.'),
-                      actions: <Widget>[
-                        FlatButton(
-                            child: Text('Ok'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              Navigator.of(context).pop();
-                              Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => MyApp()));
-                            })
-                      ]);
-                });
-          } else {
-            showDialog(
-                context: context,
-                barrierDismissible: false,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: Text('챌린지를 클리어 하셨나요?'),
-                    content: SingleChildScrollView(
-                      child: ListBody(
-                        children: <Widget>[
-                          Text('클리어 하셨다면 Ok를,'),
-                          Text('아직 클리어 하지 않으셨다면 cancle을\n눌러주세요.'),
-                        ],
-                      ),
+          showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text('챌린지를 클리어 하셨나요?'),
+                  content: SingleChildScrollView(
+                    child: ListBody(
+                      children: <Widget>[
+                        Text('클리어 하셨다면 Ok를,'),
+                        Text('아직 클리어 하지 않으셨다면 cancle을\n눌러주세요.'),
+                      ],
                     ),
-                    actions: <Widget>[
-                      FlatButton(
-                          onPressed: () {
-                            var now = new DateTime.now();
-                            if (now.isAfter(updateDay.dt)) {
-                              showDialog(
-                                  context: context,
-                                  barrierDismissible: false,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                        title: Text('하루가 지났습니다!'),
-                                        content: Text('ok를 누르면 홈 화면으로 돌아갑니다.'),
-                                        actions: <Widget>[
-                                          FlatButton(
-                                              child: Text('Ok'),
-                                              onPressed: () {
-                                                Navigator.of(context).pop();
-                                                Navigator.of(context).pop();
-                                                Navigator.of(context).pop();
-                                                Navigator.pushReplacement(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            MyApp()));
-                                              })
-                                        ]);
-                                  });
-                            } else {
-                              updateChallenge();
-                            }
-                          },
-                          child: Text('Ok')),
-                      FlatButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: Text('cancle')),
-                    ],
-                  );
-                });
-          }
+                  ),
+                  actions: <Widget>[
+                    FlatButton(
+                        onPressed: () {
+                          var now = new DateTime.now();
+                          if (now.isAfter(updateDay.dt)) { //하루가 지난 경우
+                            showDialog(
+                                context: context,
+                                barrierDismissible: false,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                      title: Text('하루가 지났습니다!'),
+                                      content: Text('ok를 누르면 홈 화면으로 돌아갑니다.'),
+                                      actions: <Widget>[
+                                        FlatButton(
+                                            child: Text('Ok'),
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                              Navigator.of(context).pop();
+                                              Navigator.of(context).pop();
+                                              Navigator.pushReplacement(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          MyApp()));
+                                            })
+                                      ]);
+                                });
+                          } else {  //하루가 지나지 않은 경우
+                            clearChallenge();
+                          }
+                        },
+                        child: Text('Ok')),
+                    FlatButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Text('cancle')),
+                  ],
+                );
+              });
         },
         child: Padding(
           padding: const EdgeInsets.all(8.0),
