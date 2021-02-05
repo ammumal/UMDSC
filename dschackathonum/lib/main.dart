@@ -50,6 +50,22 @@ class _initViewState extends State<initView> {
                 onChanged: (value) {
                   setState(() {
                     _selectedValue = value;
+                    if(value =='북극곰'){
+                      Firestore.instance.collection('userData').document('ILMQl5nJoRBL7RlfLtrd').updateData(
+                          {'animalNumber': 0});
+                    }
+                    else if(value =='코끼리'){
+                      Firestore.instance.collection('userData').document('ILMQl5nJoRBL7RlfLtrd').updateData(
+                          {'animalNumber': 1});
+                    }
+                    else if(value =='뱅갈호랑이'){
+                      Firestore.instance.collection('userData').document('ILMQl5nJoRBL7RlfLtrd').updateData(
+                          {'animalNumber': 2});
+                    }
+                    else if(value == '치타'){
+                      Firestore.instance.collection('userData').document('ILMQl5nJoRBL7RlfLtrd').updateData(
+                          {'animalNumber': 3});
+                    }
                   });
                 },
               ),
@@ -657,6 +673,8 @@ Widget _buildTop() {
     padding: const EdgeInsets.only(left: 14, right: 14, top: 10, bottom: 10),
     child: Column(
       children: <Widget>[
+        Text('GREEN DAY에 오신 것을 환영합니다.',style: TextStyle(fontSize: 20,color: Colors.teal[700]))
+        /*
         TextField(
           style: TextStyle(height: 0.3),
           decoration: InputDecoration(
@@ -668,6 +686,8 @@ Widget _buildTop() {
               border: OutlineInputBorder(), labelText: 'Password를 입력하세요'),
         ),
         Text('google 계정으로 로그인'),
+
+         */
       ],
     ),
   );
