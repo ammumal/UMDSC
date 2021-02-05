@@ -1,8 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-
-//63줄 설명봐주세요! -유민서
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() => runApp(MaterialApp(title: 'MyApp', home: initViewsample()));
 
@@ -10,17 +8,17 @@ class initViewsample extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        centerTitle: true,
-        title: Text('Please choose an animal',
-          style: TextStyle(color: Colors.green),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          centerTitle: true,
+          title: Text(
+            'Please choose an animal',
+            style: TextStyle(color: Colors.green),
+          ),
         ),
-      ),
-      body: initView());
+        body: initView());
   }
 }
-
 
 class initView extends StatefulWidget {
   @override
@@ -37,41 +35,37 @@ class _initViewState extends State<initView> {
       padding: const EdgeInsets.all(8.0),
       child: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children:<Widget>[
-            DropdownButton(
-            value: _selectedValue,
-            items: _valueList.map(
-                    (value) {
-                      return DropdownMenuItem(
-                        value: value,
-                        child: Text(value),
-                      );
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              DropdownButton(
+                value: _selectedValue,
+                items: _valueList.map(
+                  (value) {
+                    return DropdownMenuItem(
+                      value: value,
+                      child: Text(value),
+                    );
+                  },
+                ).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedValue = value;
+                  });
                 },
-            ).toList(),
-            onChanged: (value) {
-              setState(() {
-                _selectedValue = value;
-              });
-            },
-            ),
-            RaisedButton(
-              child: Text('CHOICE!', style: TextStyle(fontSize: 20.0)),
-              color: Colors.blueGrey,
-              onPressed: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => MyApp()));
-              },
-            ),
-          ]
-          ),
+              ),
+              RaisedButton(
+                child: Text('CHOICE!', style: TextStyle(fontSize: 20.0)),
+                color: Colors.blueGrey,
+                onPressed: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => MyApp()));
+                },
+              ),
+            ]),
       ),
     );
   }
 }
-
 
 class MyApp extends StatefulWidget {
   @override
@@ -140,8 +134,57 @@ class Home extends StatefulWidget {
   _HomeState createState() => _HomeState();
 }
 
+//선택한 동물 데이터
+class Animal {
+  int animalNumber; //동물 번호(0: 북극곰, 1: 코끼리, 2: 뱅갈호랑이, 3: 치타)
+
+  Animal(this.animalNumber);
+}
+
+//챌린지 항목 데이터
+class Challenge {
+  String title; //챌린지 내용
+  bool clear; //챌린지 클리어 여부
+  int point; //챌린지에 부여된 행복 지수
+  int iconNumber; //챌린지 아이콘
+
+  Challenge(this.title, this.point, this.iconNumber, {this.clear = false});
+}
+
+//행복 지수 데이터
+class Happiness {
+  int point; //행복지수
+  Happiness(this.point);
+}
+
+//하루가 지났는지 확인
+class UpdateDay {
+  bool update = false;
+  int count = 6;
+  DateTime dt;
+  bool display = false;
+
+  UpdateDay({this.dt});
+}
+
+UpdateDay updateDay = new UpdateDay();
+
 class _HomeState extends State<Home> {
-  int _happiness = 0;
+  //웃는 동물 사진 리스트(사진 변경 시 jpg, png 유의!)
+  var happyAnimalList = [
+    'assets/happyAnimal0.png',
+    'assets/happyAnimal1.png',
+    'assets/happyAnimal2.png',
+    'assets/happyAnimal3.png'
+  ];
+
+  //우는 동물 사진 리스트(사진 변경 시 jpg, png 유의!)
+  var sadAnimalList = [
+    'assets/sadAnimal0.png',
+    'assets/sadAnimal1.png',
+    'assets/sadAnimal2.png',
+    'assets/sadAnimal3.png'
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -158,26 +201,27 @@ class _HomeState extends State<Home> {
         child: Column(
           children: <Widget>[
             SizedBox(
-              height: 130,
-            ),
-            Row(children: <Widget>[
-              SizedBox(
-                width: 250,
-              ),
-              Text('행복지수: $_happiness',
-                  style: TextStyle(
-                    fontSize: 20.0,
-                  )),
-            ]),
-            Image.asset(
-              'assets/6.png',
-            ),
-            SizedBox(
               height: 50,
             ),
+            StreamBuilder<QuerySnapshot>(
+              //행복지수, 동물 그림
+              stream: Firestore.instance.collection('userData').snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return CircularProgressIndicator();
+                }
+                final documents = snapshot.data.documents;
+                return Column(
+                  children:
+                      documents.map((doc) => _buildItemWidget(doc)).toList(),
+                );
+              },
+            ),
             RaisedButton(
-              child: Text('Week Challenge', style: TextStyle(fontSize: 20.0)),
-              color: Colors.orange,
+              // Week Challenge 버튼
+              child: Text('Daily Challenge',
+                  style: TextStyle(fontSize: 20.0, color: Colors.white)),
+              color: Colors.lightGreen,
               onPressed: () {
                 Navigator.push(
                     context,
@@ -190,6 +234,77 @@ class _HomeState extends State<Home> {
       ),
     );
   }
+
+  //행복 지수, 동물 그림 위젯
+  Widget _buildItemWidget(DocumentSnapshot doc) {
+    final happiness = Happiness(doc['point']);
+    final animal = Animal(doc['animalNumber']);
+
+    var now = new DateTime.now();
+    updateDay.dt = new DateTime.fromMillisecondsSinceEpoch(
+        doc['updateTime'].seconds * 1000);
+
+    if (now.isAfter(updateDay.dt)) {
+      Firestore.instance
+          .collection('userData')
+          .document(doc.documentID)
+          .updateData({'point': 0});
+      var up = doc['updateTime'].seconds + 86400;
+      Firestore.instance
+          .collection('userData')
+          .document(doc.documentID)
+          .updateData({'updateTime': Timestamp(up, 0)});
+      Firestore.instance
+          .collection('userData')
+          .document(doc.documentID)
+          .updateData({'updateTime': Timestamp(up, 0)});
+      updateDay.update = true;
+    }
+
+    if (happiness.point < 100) {
+      return Column(
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              SizedBox(
+                width: 250,
+              ),
+              Text('행복지수: ${happiness.point}',
+                  style: TextStyle(
+                    fontSize: 20.0,
+                  )),
+            ],
+          ),
+          Image.asset(
+            sadAnimalList[animal.animalNumber],
+            height: 400,
+            width: 300,
+          )
+        ],
+      );
+    } else {
+      return Column(
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              SizedBox(
+                width: 250,
+              ),
+              Text('행복지수: ${happiness.point}',
+                  style: TextStyle(
+                    fontSize: 20.0,
+                  )),
+            ],
+          ),
+          Image.asset(
+            happyAnimalList[animal.animalNumber],
+            height: 400,
+            width: 300,
+          )
+        ],
+      );
+    }
+  }
 }
 
 class WeekChallengePage extends StatefulWidget {
@@ -197,23 +312,16 @@ class WeekChallengePage extends StatefulWidget {
   _WeekChallengePageState createState() => _WeekChallengePageState();
 }
 
-class Challenges {
-  String challenges;
-  bool clear = false;
-
-  Challenges(this.challenges);
-}
-
+//데일리 챌린지 페이지
 class _WeekChallengePageState extends State<WeekChallengePage> {
-  var count = 6;
-
-  final _items = [
-    Challenges('환경 마크가 있는 상품 구매하기'),
-    Challenges('과일과 야채를 많이 먹는 날 정하기'),
-    Challenges('가까운 거리는 걷거나 자전거 이용하기'),
-    Challenges('텀블러나 개인 컵 사용하기'),
-    Challenges('양치컵 사용하기'),
-    Challenges('식사는 먹을 만큼만 차리고 싹싹 비우기'),
+  //챌린지별 아이콘 리스트
+  var iconList = [
+    Icon(Icons.clear),
+    Icon(Icons.access_alarm),
+    Icon(Icons.airport_shuttle),
+    Icon(Icons.wb_incandescent_outlined),
+    Icon(Icons.wash_outlined),
+    Icon(Icons.delete)
   ];
 
   @override
@@ -222,115 +330,264 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
       appBar: AppBar(
         backgroundColor: Colors.lightGreen,
         title: Text(
-          '위크 챌린지',
+          'Daily Challenge',
           style: TextStyle(color: Colors.white),
         ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Card(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0),
-          ),
-          child: count > 0
-              ? Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ListView(
-              scrollDirection: Axis.vertical,
-              children: _items
-                  .map((challenges) => _buildItemWidget(challenges))
-                  .toList(),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0),
             ),
-          )
-              : Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Center(
-                child: Text(
-                  '오늘의 챌린지를 모두\n완료했습니다!',
-                  style: TextStyle(
-                    fontSize: 30.0,
+            child: StreamBuilder<QuerySnapshot>(
+              //챌린지 항목들
+              stream: Firestore.instance.collection('challenge').snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return CircularProgressIndicator();
+                }
+                final documents = snapshot.data.documents;
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ListView(
+                    scrollDirection: Axis.vertical,
+                    children:
+                        documents.map((doc) => _buildItemWidget(doc)).toList(),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-              )),
-        ),
+                );
+              },
+            )),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          onTap: (index) => {},
-          currentIndex: 0,
-          backgroundColor: Colors.green,
-          //하단 내비게이션바 배경색
-          selectedItemColor: Colors.white,
-          //하단 내비게이션바 선택된 아이콘색
-          unselectedItemColor: Colors.white.withOpacity(.60),
-          //선택되지 않은 아이콘색
-          selectedFontSize: 14,
-          unselectedFontSize: 14,
-          items: [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.watch), label: 'Event'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.book_rounded), label: 'Tips'),
-            BottomNavigationBarItem(
-                icon: Icon(Icons.account_circle), label: 'My Page'),
-          ]),
     );
   }
 
-  Widget _buildItemWidget(Challenges challenges) {
-    return InkWell(
-      onTap: () {
-        setState(() {
-          challenges.clear = !challenges.clear;
-        });
-        count--;
-      },
-      child: challenges.clear
-          ? Container()
-          : Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: Column(
-          children: <Widget>[
-            SizedBox(
-              height: 10,
-            ),
-            Container(
-              child: Row(
-                children: <Widget>[
-                  Icon(Icons.tag_faces),
-                  SizedBox(
-                    width: 20,
+  //챌린지 항목 위젯
+  Widget _buildItemWidget(DocumentSnapshot doc) {
+    final challenge = Challenge(doc['title'], doc['point'], doc['iconNumber'],
+        clear: doc['clear']);
+
+    if (updateDay.update) {
+      updateDay.count--;
+      if (updateDay.count == 0) {
+        updateDay.update = false;
+        updateDay.count = 6;
+      }
+      Firestore.instance
+          .collection('challenge')
+          .document(doc.documentID)
+          .updateData({'clear': false});
+      challenge.clear = doc['clear'];
+    }
+
+    Future updateChallenge() async {
+      Firestore.instance
+          .collection('challenge')
+          .document(doc.documentID)
+          .updateData({'clear': !doc['clear']});
+      await Firestore.instance
+          .collection('userData')
+          .document('ILMQl5nJoRBL7RlfLtrd')
+          .get()
+          .then((DocumentSnapshot doc2) async {
+        var point = doc2['point'];
+        Firestore.instance
+            .collection('userData')
+            .document('ILMQl5nJoRBL7RlfLtrd')
+            .updateData({'point': point + doc['point']});
+      });
+      Navigator.of(context).pop();
+    }
+
+    if (challenge.clear)
+      return InkWell(
+          //챌린지 클리어한 경우
+          onTap: () {
+            showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                      title: Text('이미 완료한 챌린지입니다!'),
+                      content: Text('Ok를 눌러 창을 닫아주세요.'),
+                      actions: <Widget>[
+                        FlatButton(
+                            child: Text('Ok'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            })
+                      ]);
+                });
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: <Widget>[
+                SizedBox(
+                  height: 10,
+                ),
+                Container(
+                  child: Row(
+                    children: <Widget>[
+                      iconList[doc['iconNumber']],
+                      SizedBox(
+                        width: 20,
+                      ),
+                      Expanded(
+                        child: Text(
+                          '${challenge.title}',
+                          style: TextStyle(
+                            fontSize: 20.0,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 20,
+                      ),
+                      Image.asset(
+                        'assets/challengeClear.png',
+                        height: 60,
+                        width: 60,
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: Text(
-                      '${challenges.challenges}',
-                      style: TextStyle(
-                        fontSize: 20.0,
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+              ],
+            ),
+          ));
+    else {
+      return InkWell(
+        //챌린지 클리어하지 않은 경우
+        onTap: () {
+          var now = new DateTime.now();
+          if (now.isAfter(updateDay.dt)) {
+            showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                      title: Text('하루가 지났습니다!'),
+                      content: Text('ok를 누르면 홈 화면으로 돌아갑니다.'),
+                      actions: <Widget>[
+                        FlatButton(
+                            child: Text('Ok'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pop();
+                              Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => MyApp()));
+                            })
+                      ]);
+                });
+          } else {
+            showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('챌린지를 클리어 하셨나요?'),
+                    content: SingleChildScrollView(
+                      child: ListBody(
+                        children: <Widget>[
+                          Text('클리어 하셨다면 Ok를,'),
+                          Text('아직 클리어 하지 않으셨다면 cancle을\n눌러주세요.'),
+                        ],
                       ),
                     ),
-                  ),
-                  SizedBox(
-                    width: 20,
-                  ),
-                  Icon(Icons.tag_faces),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Text('행복 5개')
-                ],
+                    actions: <Widget>[
+                      FlatButton(
+                          onPressed: () {
+                            var now = new DateTime.now();
+                            if (now.isAfter(updateDay.dt)) {
+                              showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                        title: Text('하루가 지났습니다!'),
+                                        content: Text('ok를 누르면 홈 화면으로 돌아갑니다.'),
+                                        actions: <Widget>[
+                                          FlatButton(
+                                              child: Text('Ok'),
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                                Navigator.of(context).pop();
+                                                Navigator.of(context).pop();
+                                                Navigator.pushReplacement(
+                                                    context,
+                                                    MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            MyApp()));
+                                              })
+                                        ]);
+                                  });
+                            } else {
+                              updateChallenge();
+                            }
+                          },
+                          child: Text('Ok')),
+                      FlatButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text('cancle')),
+                    ],
+                  );
+                });
+          }
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: <Widget>[
+              SizedBox(
+                height: 10,
               ),
-            ),
-            SizedBox(
-              height: 10,
-            ),
-          ],
+              Container(
+                child: Row(
+                  children: <Widget>[
+                    iconList[doc['iconNumber']],
+                    SizedBox(
+                      width: 20,
+                    ),
+                    Expanded(
+                      child: Text(
+                        '${challenge.title}',
+                        style: TextStyle(
+                          fontSize: 20.0,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 20,
+                    ),
+                    Column(
+                      children: <Widget>[
+                        Icon(Icons.tag_faces),
+                        SizedBox(
+                          height: 10,
+                        ),
+                        Text('행복지수 ${challenge.point}+'),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+            ],
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 }
-
 
 class Event extends StatefulWidget {
   @override
@@ -342,13 +599,12 @@ class _EventState extends State<Event> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.white,
-          centerTitle: true,
-          title: Text('event', style: TextStyle(color: Colors.green)),
-        ));
+      backgroundColor: Colors.white,
+      centerTitle: true,
+      title: Text('event', style: TextStyle(color: Colors.green)),
+    ));
   }
 }
-
 
 class Tips extends StatefulWidget {
   @override
@@ -360,14 +616,13 @@ class _TipsState extends State<Tips> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.white,
-          centerTitle: true,
-          title:
+      backgroundColor: Colors.white,
+      centerTitle: true,
+      title:
           Text('How to save the earth?', style: TextStyle(color: Colors.green)),
-        ));
+    ));
   }
 }
-
 
 class MyPage extends StatefulWidget {
   @override
@@ -402,16 +657,12 @@ Widget _buildTop() {
         TextField(
           style: TextStyle(height: 0.3),
           decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'email을 입력하세요'
-          ),
+              border: OutlineInputBorder(), labelText: 'email을 입력하세요'),
         ),
         TextField(
           style: TextStyle(height: 0.3),
           decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Password를 입력하세요'
-          ),
+              border: OutlineInputBorder(), labelText: 'Password를 입력하세요'),
         ),
         Text('google 계정으로 로그인'),
       ],
@@ -507,19 +758,17 @@ Widget _buildBottom() {
         leading: Icon(Icons.chevron_right),
         title: Text(
             'ABOUT GREEN DAY\n\nGlobal warming is the long-term heating of Earths climate '
-                'system observed since the pre-industrial period (between 1850 and 1900) due'
-                ' to human activities, primarily fossil fuel burning, which increases h'
-                'eat-trapping greenhouse gas levels in Earths atmosphere.\n\n'
-                'Since the pre-industrial period, human activities are estimated to have increased Earths global average '
-                'temperature by about 1 degree Celsius (1.8 degrees Fahrenheit), '
-                'a number that is currently increasing by 0.2 degrees Celsius (0.36 degrees Fahrenheit) per decade. '
-                'Most of the current warming trend is extremely likely (greater than 95 percent probability) the resu'
-                'lt of human activity since the 1950s and is proceeding at an unprecedented rate over decades to millennia.\n\nThank you.'),
+            'system observed since the pre-industrial period (between 1850 and 1900) due'
+            ' to human activities, primarily fossil fuel burning, which increases h'
+            'eat-trapping greenhouse gas levels in Earths atmosphere.\n\n'
+            'Since the pre-industrial period, human activities are estimated to have increased Earths global average '
+            'temperature by about 1 degree Celsius (1.8 degrees Fahrenheit), '
+            'a number that is currently increasing by 0.2 degrees Celsius (0.36 degrees Fahrenheit) per decade. '
+            'Most of the current warming trend is extremely likely (greater than 95 percent probability) the resu'
+            'lt of human activity since the 1950s and is proceeding at an unprecedented rate over decades to millennia.\n\nThank you.'),
         subtitle: Text('[개발자 강예빈, 유민서, 윤여경, 이지은]'),
-
       ),
     ],
-
   );
 }
 
