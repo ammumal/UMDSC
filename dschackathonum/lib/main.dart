@@ -1,8 +1,13 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() => runApp(MaterialApp(title: 'MyApp', home: initViewsample()));
+
+
+int challengeDone = 0;
+int eventDone = 0;
+
 
 class initViewsample extends StatelessWidget {
   @override
@@ -414,6 +419,7 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
             .collection('userData')
             .document('ILMQl5nJoRBL7RlfLtrd')
             .updateData({'point': point + doc['point']});
+        challengeDone++;
       });
       Navigator.of(context).pop();
     }
@@ -662,9 +668,12 @@ class _MyPageState extends State<MyPage> {
           _buildTop(),
           _buildMiddle(),
           _buildBottom(),
+
         ],
       ),
+
     );
+
   }
 }
 
@@ -696,6 +705,8 @@ Widget _buildTop() {
 Widget _buildMiddle() {
   int count = 0;
 
+
+
   return Center(
     child: Card(
       shape: RoundedRectangleBorder(
@@ -720,9 +731,10 @@ Widget _buildMiddle() {
                       ),
                       Text('참여횟수'),
                       Text(
-                        '6',
+                        '$challengeDone',
                         style: TextStyle(fontSize: 25),
                       )
+
                     ],
                   ),
                   Column(
@@ -794,19 +806,3 @@ Widget _buildBottom() {
     ],
   );
 }
-
-/*
-FirebaseAuth auth = FirebaseAuth.instance;
-GoogleSignIn googleSignIn = GoogleSignIn();
-
-
-GoogleSignInAccount account = await googleSignIn.signIn();
-
-GoogleSignInAuthentication authentication = await account.authentication;
-
-AuthCredential credential = GoogleAuthProvider.getCredential(
-    idToken: authentication.idToken, accessToken: authentication.accessToken);
-AuthResult authResult = await auth.signInWithCredential(credential);
-
-FirebaseUser user = authResult.user;
-*/
