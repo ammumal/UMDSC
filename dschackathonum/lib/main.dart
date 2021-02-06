@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -619,33 +620,171 @@ class Event extends StatefulWidget {
   _EventState createState() => _EventState();
 }
 
+//Event class
+class EventInfo {
+  String title;
+  String subtitle;
+  String main_img;
+  String date;
+  String reward;
+  String event_url;
+  bool is_done;
+
+  EventInfo(this.title, this.subtitle, this.main_img, this.date, this.reward, this.event_url, {this.is_done = false});
+}
+
 class _EventState extends State<Event> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-      backgroundColor: Colors.white,
-      centerTitle: true,
-      title: Text('event', style: TextStyle(color: Colors.green)),
-    ));
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        title: Text(
+          '이벤트',
+          style: TextStyle(color: Colors.green),
+        ),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Center(
+          child: ListView(
+            children: <Widget>[
+              StreamBuilder<QuerySnapshot>(
+                  stream: Firestore.instance.collection('Event').snapshots(),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return CircularProgressIndicator();
+                    }
+                    final documents = snapshot.data.documents;
+                    return Expanded(
+                      child: Column(
+                        children: documents.map((doc) => _buildItemWidget(doc)).toList(),
+                      ),
+                    );
+                  }
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  //이벤트 생성 및 상세 페이지로 연결
+  Widget _buildItemWidget(DocumentSnapshot doc) {
+    final event = EventInfo(doc['title'], doc['subtitle'], doc['main_img'], doc['date'], doc['reward'], doc['event_url']);
+
+    var now = new DateTime.now();
+
+    return Card(
+      child: Container(
+        width: double.infinity,
+        height: 200,
+        child: InkWell(
+          onTap: () => _eventDetail(event),
+          child: Column(
+            children: <Widget>[
+              AutoSizeText(event.title, ),
+              Image.network(event.main_img, width: 70, height: 70,),
+              AutoSizeText(event.subtitle,),
+              Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Text(event.date)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  //이벤트 상세페이지
+  Widget _eventDetail(EventInfo event) {
+
+    final eventDetail = event.event_url;
+
+    return Text('이벤트 상세페이지 입니다');
   }
 }
 
+//정보&팁 페이지
 class Tips extends StatefulWidget {
   @override
   _TipsState createState() => _TipsState();
+}
+
+//팁 클래스 선언 (DB에 사용할 필드)
+class TipInfo {
+  String title;
+  String subtitle;
+  String main_img;
+
+  TipInfo(this.title, this.subtitle, this.main_img);
 }
 
 class _TipsState extends State<Tips> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-      backgroundColor: Colors.white,
-      centerTitle: true,
-      title:
-          Text('How to save the earth?', style: TextStyle(color: Colors.green)),
-    ));
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        title: Text(
+          '정보 & 꿀팁',
+          style: TextStyle(color: Colors.green),
+        ),
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Center(
+          child: ListView(
+            children: <Widget>[
+              StreamBuilder<QuerySnapshot> (
+                stream: Firestore.instance.collection('Tips').snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return CircularProgressIndicator();
+                  }
+                  final documents = snapshot.data.documents;
+                  return Expanded(
+                    child: Column(
+                      children: documents.map((doc) => _buildItemWidget(doc)).toList(),
+                    ),
+                  );
+                },
+              ),
+              SizedBox( height: 30,),
+
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItemWidget (DocumentSnapshot doc) {
+    final tip = TipInfo(doc['title'], doc['subtitle'], doc['main_img']);
+
+    return Card(
+      semanticContainer: true,
+      clipBehavior: Clip.antiAliasWithSaveLayer,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0)),
+      child: Container(
+        height: 250,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: NetworkImage(
+                tip.main_img),
+            fit: BoxFit.fitWidth,
+            alignment: Alignment.topCenter,
+          ),
+        ),
+        child: Align(
+            alignment: Alignment.bottomCenter,
+            child: Text(tip.title)),
+      ),
+    );
   }
 }
 
