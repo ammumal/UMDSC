@@ -657,10 +657,8 @@ class _EventState extends State<Event> {
                       return CircularProgressIndicator();
                     }
                     final documents = snapshot.data.documents;
-                    return Expanded(
-                      child: Column(
-                        children: documents.map((doc) => _buildItemWidget(doc)).toList(),
-                      ),
+                    return Column(
+                      children: documents.map((doc) => _buildItemWidget(doc)).toList(),
                     );
                   }
               ),
@@ -746,10 +744,8 @@ class _TipsState extends State<Tips> {
                     return CircularProgressIndicator();
                   }
                   final documents = snapshot.data.documents;
-                  return Expanded(
-                    child: Column(
-                      children: documents.map((doc) => _buildItemWidget(doc)).toList(),
-                    ),
+                  return Column(
+                    children: documents.map((doc) => _buildItemWidget(doc)).toList(),
                   );
                 },
               ),
@@ -765,29 +761,40 @@ class _TipsState extends State<Tips> {
   Widget _buildItemWidget (DocumentSnapshot doc) {
     final tip = TipInfo(doc['title'], doc['subtitle'], doc['main_img']);
 
-    return Card(
-      semanticContainer: true,
-      clipBehavior: Clip.antiAliasWithSaveLayer,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16.0)),
-      child: Container(
-        height: 250,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: NetworkImage(
-                tip.main_img),
-            fit: BoxFit.fitWidth,
-            alignment: Alignment.topCenter,
+    return InkWell(
+      // 메서드 이름은 임의로 정했고 상세페이지로 넘어가는 기능입니다!
+      onTap: () => _tipDetail(),
+      child: Card(
+        semanticContainer: true,
+        clipBehavior: Clip.antiAliasWithSaveLayer,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0)),
+        child: Container(
+          height: 250,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: NetworkImage(
+                  tip.main_img),
+              fit: BoxFit.fitWidth,
+              alignment: Alignment.topCenter,
+            ),
           ),
+          child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Text(tip.title)),
         ),
-        child: Align(
-            alignment: Alignment.bottomCenter,
-            child: Text(tip.title)),
       ),
     );
   }
+
+  //tip 상세화면 보여주는 함수를 임의로 만들어놨습니다
+  Widget _tipDetail() {
+
+  }
 }
 
+
+//마이페이지
 class MyPage extends StatefulWidget {
   @override
   _MyPageState createState() => _MyPageState();
