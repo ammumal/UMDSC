@@ -1,16 +1,14 @@
-# dschackathonum
+# Team UM
 
-A new Flutter application.
+2021 DSC Korea 해커톤 참여작
 
-## Getting Started
 
-This project is a starting point for a Flutter application.
+## Green Day
 
-A few resources to get you started if this is your first Flutter project:
+#### “일상에서 환경 보호 실천의 중요성 강조”
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+1. 매일 실천할 수 있는 환경 보호 활동을 챌린지 형식으로 제시
+2. 환경 보호 관련 이벤트 정보를 제공
+3. 올바른 환경 보호 tip 제공
 
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+#####다수의 사람들이 환경 보호를 실천하게 유도함으로써, 결과적으로 환경 보호에 큰 긍정적 효과를 가져옴
