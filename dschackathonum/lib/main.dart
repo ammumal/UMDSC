@@ -705,6 +705,264 @@ class _EventState extends State<Event> {
   }
 }
 
+//이벤트 상세페이지
+class EventDetail extends StatefulWidget {
+  EventDetail({Key key, this.title, EventInfo event}) : super(key: key);
+
+  final String title;
+
+  @override
+  _EventDetailState createState() => _EventDetailState();
+}
+
+class _EventDetailState extends State<EventDetail> {
+  int _counter = 0;
+
+  void _incrementCounter() {
+    setState(() {
+      _counter++;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
+    double width = screenSize.width;
+    double height = screenSize.height;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Event'),
+        backgroundColor: Colors.blueAccent,
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(width * 0.024),
+        child: ListView(
+          children: <Widget>[
+            Container(
+              color: Colors.blue[100],
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.all(width * 0.024),
+                    child: Image.asset(
+                      'images/sample.png',
+                      width: width * 0.2,
+                      height: width * 0.2,
+                    ),
+                  ),
+                  Container(
+                    width: width * 0.7,
+                    height: width * 0.3,
+                    child: Column(
+                      children: <Widget>[
+                        Padding(
+                          padding: EdgeInsets.only(bottom: width * 0.04),
+                        ),
+                        Text(
+                          '2020환경의 날 SNS국민 참여 이벤트',
+                          style: TextStyle(
+                            fontSize: 15,
+                          ),
+                          textAlign: TextAlign.left,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: width * 0.024),
+                        ),
+                        Text(
+                          '2021년 02월 01일 ~ 2021년 2월 28일',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: width * 0.024),
+                        ),
+                        Container(
+                          alignment: Alignment.center,
+                          child: Row(
+                            children: <Widget>[
+                              Icon(
+                                Icons.money_off,
+                                size: 12,
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(width * 0.002),
+                              ),
+                              Text(
+                                '편의점 상품권 2천원',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Container(
+              color: Colors.blue[100],
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.all(width * 0.024),
+                    child: Image.asset(
+                      'images/sample.png',
+                      width: width * 0.95,
+                    ),
+                  ),
+                  SizedBox(
+                    height: width * 0.024,
+                  ),
+                  Container(
+                    width: width * 0.8,
+                    child: Text(
+                      "This text is very very very very very very very very very very very very very very very very very very very very very very very very very long",
+                    ),
+                  ),
+                  SizedBox(
+                    height: width * 0.024,
+                  ),
+                  RaisedButton(
+                    child: Text(
+                      '참가하기',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    color: Colors.pink[100],
+                    onPressed: () {},
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+//팁 상세페이지
+class TipsDetail extends StatefulWidget {
+  @override
+  _TipsDetailState createState() => _TipsDetailState();
+}
+
+class _TipsDetailState extends State<TipsDetail> {
+  @override
+  Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
+    double width = screenSize.width;
+    double height = screenSize.height;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Information'),
+        backgroundColor: Colors.blueAccent,
+      ),
+      body: Padding(
+        padding: EdgeInsets.all(width * 0.024),
+        child: ListView(
+          children: <Widget>[
+            Container(
+              color: Colors.blue[100],
+              child: Row(
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.all(width * 0.024),
+                    child: Image.asset(
+                      'images/sample.png',
+                      width: width * 0.2,
+                      height: width * 0.2,
+                    ),
+                  ),
+                  Container(
+                    width: width * 0.7,
+                    height: width * 0.3,
+                    child: Column(
+                      children: <Widget>[
+                        Padding(
+                          padding: EdgeInsets.only(bottom: width * 0.04),
+                        ),
+                        Text(
+                          '2020환경의 날 SNS국민 참여 이벤트',
+                          style: TextStyle(
+                            fontSize: 15,
+                          ),
+                          textAlign: TextAlign.left,
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: width * 0.024),
+                        ),
+                        Text(
+                          '2021년 02월 01일 ~ 2021년 2월 28일',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.only(bottom: width * 0.024),
+                        ),
+                        Container(
+                          alignment: Alignment.center,
+                          child: Row(
+                            children: <Widget>[
+                              Icon(
+                                Icons.money_off,
+                                size: 12,
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(width * 0.002),
+                              ),
+                              Text(
+                                '편의점 상품권 2천원',
+                                style: TextStyle(fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 10,
+            ),
+            Container(
+              color: Colors.blue[100],
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.all(width * 0.024),
+                    child: Image.asset(
+                      'images/sample.png',
+                      width: width * 0.95,
+                    ),
+                  ),
+                  SizedBox(
+                    height: width * 0.024,
+                  ),
+                  Container(
+                    width: width * 0.8,
+                    child: Text(
+                      "This text is very very very very very very very very very very very very very very very very very very very very very very very very very long",
+                    ),
+                  ),
+                  SizedBox(
+                    height: width * 0.024,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 //정보&팁 페이지
 class Tips extends StatefulWidget {
   @override
