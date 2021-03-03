@@ -3,6 +3,8 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+
+
 void main() => runApp(MaterialApp(title: 'MyApp', home: initViewsample()));
 
 
@@ -1060,15 +1062,21 @@ class _TipsState extends State<Tips> {
   }
 }
 
-
 //마이페이지
 class MyPage extends StatefulWidget {
   @override
   _MyPageState createState() => _MyPageState();
 }
 
+
+DateTime now = DateTime.now();
+DateTime _selectedTime;
+
 class _MyPageState extends State<MyPage> {
   @override
+
+
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -1079,14 +1087,100 @@ class _MyPageState extends State<MyPage> {
       body: ListView(
         children: <Widget>[
           _buildTop(),
-          _buildMiddle(),
-          _buildBottom(),
+        Center(
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.0),
+            ),
+            elevation: 4.0,
+            child: Container(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Column(
+                  children: [
+                    RaisedButton(
+                      onPressed: (){
+                        Future<DateTime> selectedDate = showDatePicker(
+                          context: context,
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(2018),
+                          lastDate: DateTime(2030),
+                          builder: (BuildContext context, Widget child){
+                            return Theme(
+                              data: ThemeData.dark(),
+                              child: child,
+                            );
+                          },
+                        );
 
+                        selectedDate.then((dateTime) {
+                          setState(() {
+                            _selectedTime = dateTime;
+                          });
+                        });
+                      },
+                      child: Text('Today : ${now.year.toString()} / ${now.month.toString()}', style: TextStyle(fontSize: 30)),
+                    ),
+                    Text('Tap the button above to change the date\n'),
+                    //Text('${_selectedTime.year.toString()} - ${_selectedTime.month.toString()}', style: TextStyle(fontSize: 35),),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: <Widget>[
+                        Column(
+                          children: <Widget>[
+                            Icon(
+                              Icons.stars,
+                              size: 100,
+                              color: Colors.amber,
+                            ),
+                            Text('Number of Challenges'),
+                            StreamBuilder<QuerySnapshot>(
+                              stream: Firestore.instance.collection('userData').snapshots(),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) {
+                                  return CircularProgressIndicator();
+                                }
+                                final documents = snapshot.data.documents;
+                                return Column(
+                                  children:
+                                  documents.map((doc) => _buildMyPageItemWidget(doc)).toList(),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: <Widget>[
+                            Icon(
+                              Icons.event_available,
+                              size: 100,
+                              color: Colors.amber,
+                            ),
+                            Text('Number of Event'),
+                            Text(
+                              '2',
+                              style: TextStyle(fontSize: 25),
+                            )
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              width: 380,
+              height: 250,
+            ),
+          ),
+        ),
+          //Text('${_selectedTime.year.toString()}-${_selectedTime.month.toString()}'),
+
+          _buildBottom(),
         ],
       ),
 
-    );
 
+    );
 
   }
 }
@@ -1116,74 +1210,7 @@ Widget _buildTop() {
   );
 }
 
-Widget _buildMiddle() {
-  int count = 0;
 
-
-
-  return Center(
-    child: Card(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16.0),
-      ),
-      elevation: 4.0,
-      child: Container(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 20),
-          child: Column(
-            children: [
-              Text(' 2021-01 ', style: TextStyle(fontSize: 35)),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: <Widget>[
-                  Column(
-                    children: <Widget>[
-                      Icon(
-                        Icons.stars,
-                        size: 100,
-                        color: Colors.amber,
-                      ),
-                      Text('참여횟수'),
-                      StreamBuilder<QuerySnapshot>(
-                        stream: Firestore.instance.collection('userData').snapshots(),
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
-                            return CircularProgressIndicator();
-                          }
-                          final documents = snapshot.data.documents;
-                          return Column(
-                            children:
-                            documents.map((doc) => _buildMyPageItemWidget(doc)).toList(),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                  Column(
-                    children: <Widget>[
-                      Icon(
-                        Icons.event_available,
-                        size: 100,
-                        color: Colors.amber,
-                      ),
-                      Text('이벤트'),
-                      Text(
-                        '2',
-                        style: TextStyle(fontSize: 25),
-                      )
-                    ],
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-        width: 380,
-        height: 250,
-      ),
-    ),
-  );
-}
 
 //마이페이지의 챌린지 성공 횟수 위젯
 Widget _buildMyPageItemWidget(DocumentSnapshot doc) {
@@ -1214,7 +1241,7 @@ Widget _buildBottom() {
     children: <Widget>[
       ListTile(
         leading: Icon(Icons.chevron_right),
-        title: Text('알림설정'),
+        title: Text('Alarm setting'),
         trailing: Switch(
           value: _isChecked,
           onChanged: (value) {
@@ -1224,16 +1251,11 @@ Widget _buildBottom() {
       ),
       ListTile(
         leading: Icon(Icons.chevron_right),
-        title: Text(
-            'ABOUT GREEN DAY\n\nGlobal warming is the long-term heating of Earths climate '
-            'system observed since the pre-industrial period (between 1850 and 1900) due'
-            ' to human activities, primarily fossil fuel burning, which increases h'
-            'eat-trapping greenhouse gas levels in Earths atmosphere.\n\n'
-            'Since the pre-industrial period, human activities are estimated to have increased Earths global average '
-            'temperature by about 1 degree Celsius (1.8 degrees Fahrenheit), '
-            'a number that is currently increasing by 0.2 degrees Celsius (0.36 degrees Fahrenheit) per decade. '
-            'Most of the current warming trend is extremely likely (greater than 95 percent probability) the resu'
-            'lt of human activity since the 1950s and is proceeding at an unprecedented rate over decades to millennia.\n\nThank you.'),
+        title: Text('ABOUT GREEN DAY\n\nThe Green Day application created by 4 dsc sungshin members was planned with the '
+                'focus on the destruction of the ecosystem of animals such as rising sleep and depletion of resources due to climate change.\n\n '
+                'Your daily challenges will make polar bears, elephants, bengal tigers and cheetahs happy.\n '
+                'You can also view and experience various information and events related to the environment.\n\n '
+                'Please praise yourself for your efforts for future generations through this application.\n\nThank you.'),
         subtitle: Text('[개발자 강예빈, 유민서, 윤여경, 이지은]'),
       ),
     ],
