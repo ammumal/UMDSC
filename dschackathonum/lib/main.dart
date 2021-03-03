@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 void main() => runApp(MaterialApp(title: 'MyApp', home: initViewsample()));
 
 
-int challengeDone = 0;
 int eventDone = 0;
 
 
@@ -266,6 +265,13 @@ class _HomeState extends State<Home> {
 
     //하루가 지났을 경우, 날짜 변경 시간을 다음 날로 업데이트
     if (now.isAfter(updateDay.dt)) {
+      //한 달이 지났을 경우(월이 달라질 경우) 메인 페이지 챌린지 횟수 초기화
+      if(now.month != updateDay.dt.month){
+        Firestore.instance
+            .collection('userData')
+            .document(doc.documentID)
+            .updateData({'monthlyCount': 0});
+      }
       Firestore.instance
           .collection('userData')
           .document(doc.documentID)
@@ -420,7 +426,9 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
             .collection('userData')
             .document('ILMQl5nJoRBL7RlfLtrd')
             .updateData({'point': point + doc['point']});
-        challengeDone++;
+        Firestore.instance
+            .collection('userData')
+            .document('ILMQl5nJoRBL7RlfLtrd')
       });
       Navigator.of(context).pop();
     }
@@ -1078,6 +1086,7 @@ class _MyPageState extends State<MyPage> {
 
     );
 
+
   }
 }
 
@@ -1134,11 +1143,19 @@ Widget _buildMiddle() {
                         color: Colors.amber,
                       ),
                       Text('참여횟수'),
-                      Text(
-                        '$challengeDone',
-                        style: TextStyle(fontSize: 25),
-                      )
-
+                      StreamBuilder<QuerySnapshot>(
+                        stream: Firestore.instance.collection('userData').snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return CircularProgressIndicator();
+                          }
+                          final documents = snapshot.data.documents;
+                          return Column(
+                            children:
+                            documents.map((doc) => _buildMyPageItemWidget(doc)).toList(),
+                          );
+                        },
+                      ),
                     ],
                   ),
                   Column(
@@ -1166,6 +1183,17 @@ Widget _buildMiddle() {
     ),
   );
 }
+
+//마이페이지의 챌린지 성공 횟수 위젯
+Widget _buildMyPageItemWidget(DocumentSnapshot doc) {
+  final monthlyCount = doc['monthlyCount'];
+
+  return Text(
+    '$monthlyCount',
+    style: TextStyle(fontSize: 25),
+  );
+}
+
 
 Widget _buildBottom() {
   var _isChecked = false;
