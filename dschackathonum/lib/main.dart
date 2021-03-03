@@ -429,6 +429,7 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
         Firestore.instance
             .collection('userData')
             .document('ILMQl5nJoRBL7RlfLtrd')
+            .updateData({'monthlyCount': 1 + doc2['monthlyCount']});
       });
       Navigator.of(context).pop();
     }
