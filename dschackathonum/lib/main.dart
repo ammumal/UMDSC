@@ -3,13 +3,9 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-
-
 void main() => runApp(MaterialApp(title: 'MyApp', home: initViewsample()));
 
-
 int eventDone = 0;
-
 
 class initViewsample extends StatelessWidget {
   @override
@@ -57,21 +53,26 @@ class _initViewState extends State<initView> {
                 onChanged: (value) {
                   setState(() {
                     _selectedValue = value;
-                    if(value =='북극곰'){
-                      Firestore.instance.collection('userData').document('ILMQl5nJoRBL7RlfLtrd').updateData(
-                          {'animalNumber': 0});
-                    }
-                    else if(value =='코끼리'){
-                      Firestore.instance.collection('userData').document('ILMQl5nJoRBL7RlfLtrd').updateData(
-                          {'animalNumber': 1});
-                    }
-                    else if(value =='뱅갈호랑이'){
-                      Firestore.instance.collection('userData').document('ILMQl5nJoRBL7RlfLtrd').updateData(
-                          {'animalNumber': 2});
-                    }
-                    else if(value == '치타'){
-                      Firestore.instance.collection('userData').document('ILMQl5nJoRBL7RlfLtrd').updateData(
-                          {'animalNumber': 3});
+                    if (value == '북극곰') {
+                      Firestore.instance
+                          .collection('userData')
+                          .document('ILMQl5nJoRBL7RlfLtrd')
+                          .updateData({'animalNumber': 0});
+                    } else if (value == '코끼리') {
+                      Firestore.instance
+                          .collection('userData')
+                          .document('ILMQl5nJoRBL7RlfLtrd')
+                          .updateData({'animalNumber': 1});
+                    } else if (value == '뱅갈호랑이') {
+                      Firestore.instance
+                          .collection('userData')
+                          .document('ILMQl5nJoRBL7RlfLtrd')
+                          .updateData({'animalNumber': 2});
+                    } else if (value == '치타') {
+                      Firestore.instance
+                          .collection('userData')
+                          .document('ILMQl5nJoRBL7RlfLtrd')
+                          .updateData({'animalNumber': 3});
                     }
                   });
                 },
@@ -226,20 +227,19 @@ class _HomeState extends State<Home> {
             SizedBox(
               height: 50,
             ),
-            StreamBuilder<QuerySnapshot>( //행복지수, 동물 그림
+            StreamBuilder<QuerySnapshot>(
+              //행복지수, 동물 그림
               stream: Firestore.instance.collection('userData').snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return CircularProgressIndicator();
                 }
-                final documents = snapshot.data.documents;
-                return Column(
-                  children:
-                      documents.map((doc) => _buildItemWidget(doc)).toList(),
-                );
+                final document = snapshot.data.documents.first;
+                return _buildItemWidget(document);
               },
             ),
-            RaisedButton( // Week Challenge 버튼
+            RaisedButton(
+              // Week Challenge 버튼
               child: Text('Daily Challenge',
                   style: TextStyle(fontSize: 20.0, color: Colors.white)),
               color: Colors.lightGreen,
@@ -268,7 +268,7 @@ class _HomeState extends State<Home> {
     //하루가 지났을 경우, 날짜 변경 시간을 다음 날로 업데이트
     if (now.isAfter(updateDay.dt)) {
       //한 달이 지났을 경우(월이 달라질 경우) 메인 페이지 챌린지 횟수 초기화
-      if(now.month != updateDay.dt.month){
+      if (now.month != updateDay.dt.month) {
         Firestore.instance
             .collection('userData')
             .document(doc.documentID)
@@ -292,7 +292,8 @@ class _HomeState extends State<Home> {
       updateDay.update = true;
     }
 
-    if (happiness.point < 100) { //행복지수가 100 미만일 때 슬픈 동물 사진 보이기
+    if (happiness.point < 100) {
+      //행복지수가 100 미만일 때 슬픈 동물 사진 보이기
       return Column(
         children: <Widget>[
           Row(
@@ -300,7 +301,7 @@ class _HomeState extends State<Home> {
               SizedBox(
                 width: 250,
               ),
-              Text('행복지수: ${happiness.point}',
+              Text('Happiness: ${happiness.point}',
                   style: TextStyle(
                     fontSize: 20.0,
                   )),
@@ -313,7 +314,8 @@ class _HomeState extends State<Home> {
           ),
         ],
       );
-    } else {  //행복지수가 100 이상일 때 행복한 동물 사진 보이기
+    } else {
+      //행복지수가 100 이상일 때 행복한 동물 사진 보이기
       return Column(
         children: <Widget>[
           Row(
@@ -321,7 +323,7 @@ class _HomeState extends State<Home> {
               SizedBox(
                 width: 250,
               ),
-              Text('행복지수: ${happiness.point}',
+              Text('Happiness: ${happiness.point}',
                   style: TextStyle(
                     fontSize: 20.0,
                   )),
@@ -372,29 +374,40 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
               borderRadius: BorderRadius.circular(16.0),
             ),
             child: StreamBuilder<QuerySnapshot>(
-              //챌린지 항목들
-              stream: Firestore.instance.collection('challenge').snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return CircularProgressIndicator();
-                }
-                final documents = snapshot.data.documents;
-                return Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ListView(
-                    scrollDirection: Axis.vertical,
-                    children:
-                        documents.map((doc) => _buildItemWidget(doc)).toList(),
-                  ),
-                );
-              },
-            )),
+                //유저데이터
+                stream: Firestore.instance.collection('userData').snapshots(),
+                builder: (context, snapshot1) {
+                  if (!snapshot1.hasData) {
+                    return CircularProgressIndicator();
+                  }
+                  return StreamBuilder<QuerySnapshot>(
+                    //챌린지 데이터
+                    stream:
+                        Firestore.instance.collection('challenge').snapshots(),
+                    builder: (context, snapshot2) {
+                      if (!snapshot2.hasData) {
+                        return CircularProgressIndicator();
+                      }
+                      final userDocument = snapshot1.data.documents.first;
+                      final challengeDocuments = snapshot2.data.documents;
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListView(
+                          scrollDirection: Axis.vertical,
+                          children: challengeDocuments
+                              .map((doc) => _buildItemWidget(doc, userDocument))
+                              .toList(),
+                        ),
+                      );
+                    },
+                  );
+                })),
       ),
     );
   }
 
   //챌린지 항목 위젯
-  Widget _buildItemWidget(DocumentSnapshot doc) {
+  Widget _buildItemWidget(DocumentSnapshot doc, DocumentSnapshot doc2) {
     final challenge = Challenge(doc['title'], doc['point'], doc['iconNumber'],
         clear: doc['clear']);
 
@@ -413,35 +426,33 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
     }
 
     //챌린지를 클리어 했다고 'ok'를 누를 경우 실행하는 함수
-    Future clearChallenge() async {
+    clearChallenge() {
+      // 챌린지 클리어 여부, 행복지수, 월별 챌린지 클리어 개수 갱신
       Firestore.instance
           .collection('challenge')
           .document(doc.documentID)
           .updateData({'clear': !doc['clear']});
-      await Firestore.instance
+      var point = doc2['point'];
+      Firestore.instance
           .collection('userData')
-          .document('ILMQl5nJoRBL7RlfLtrd')
-          .get()
-          .then((DocumentSnapshot doc2) async {
-        var point = doc2['point'];
-        Firestore.instance
-            .collection('userData')
-            .document('ILMQl5nJoRBL7RlfLtrd')
-            .updateData({'point': point + doc['point']});
-        Firestore.instance
-            .collection('userData')
-            .document('ILMQl5nJoRBL7RlfLtrd')
-            .updateData({'monthlyCount': 1 + doc2['monthlyCount']});
-      });
+          .document(doc2.documentID)
+          .updateData({'point': point + doc['point']});
+      Firestore.instance
+          .collection('userData')
+          .document(doc2.documentID)
+          .updateData({'monthlyCount': 1 + doc2['monthlyCount']});
       Navigator.of(context).pop();
     }
 
+    //클리어 여부에 따른 챌린지 화면 + 클릭 시 액션
     if (challenge.clear)
+      //챌린지 클리어한 경우
       return InkWell(
-          //챌린지 클리어한 경우
           onTap: () {
+            //클릭 시 액션
             var now = new DateTime.now();
-            if (now.isAfter(updateDay.dt)) { //하루가 지난 경우
+            if (now.isAfter(updateDay.dt)) {
+              //클릭했을 때 하루가 지난 경우
               showDialog(
                   context: context,
                   barrierDismissible: false,
@@ -462,7 +473,8 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
                               })
                         ]);
                   });
-            } else { //하루가 지나지 않은 경우
+            } else {
+              //클릭했을 때 하루가 지나지 않은 경우
               showDialog(
                   context: context,
                   barrierDismissible: false,
@@ -481,6 +493,7 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
             }
           },
           child: Padding(
+            //챌린지 클리어 시 챌린지 화면
             padding: const EdgeInsets.all(8.0),
             child: Column(
               children: <Widget>[
@@ -520,14 +533,16 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
             ),
           ));
     else {
+      //챌린지 클리어하지 않은 경우
       return InkWell(
-        //챌린지 클리어하지 않은 경우
         onTap: () {
+          //클릭 시 액션
           showDialog(
               context: context,
               barrierDismissible: false,
               builder: (BuildContext context) {
                 return AlertDialog(
+                  //실수로 클릭 방지용 재확인
                   title: Text('챌린지를 클리어 하셨나요?'),
                   content: SingleChildScrollView(
                     child: ListBody(
@@ -541,7 +556,8 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
                     FlatButton(
                         onPressed: () {
                           var now = new DateTime.now();
-                          if (now.isAfter(updateDay.dt)) { //하루가 지난 경우
+                          if (now.isAfter(updateDay.dt)) {
+                            //클릭했을 때 하루가 지난 경우
                             showDialog(
                                 context: context,
                                 barrierDismissible: false,
@@ -564,7 +580,8 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
                                             })
                                       ]);
                                 });
-                          } else {  //하루가 지나지 않은 경우
+                          } else {
+                            //클릭했을 때 하루가 지나지 않은 경우
                             clearChallenge();
                           }
                         },
@@ -579,6 +596,7 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
               });
         },
         child: Padding(
+          //챌린지 클리어 하지 않았을 시 챌린지 화면
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: <Widget>[
@@ -609,7 +627,10 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
                         SizedBox(
                           height: 10,
                         ),
-                        Text('행복지수 ${challenge.point}+'),
+                        Text(
+                          'Happiness\n${challenge.point}+',
+                          textAlign: TextAlign.center,
+                        ),
                       ],
                     ),
                   ],
@@ -641,7 +662,9 @@ class EventInfo {
   String event_url;
   bool is_done;
 
-  EventInfo(this.title, this.subtitle, this.main_img, this.date, this.reward, this.event_url, {this.is_done = false});
+  EventInfo(this.title, this.subtitle, this.main_img, this.date, this.reward,
+      this.event_url,
+      {this.is_done = false});
 }
 
 class _EventState extends State<Event> {
@@ -669,10 +692,11 @@ class _EventState extends State<Event> {
                     }
                     final documents = snapshot.data.documents;
                     return Column(
-                      children: documents.map((doc) => _buildItemWidget(doc)).toList(),
+                      children: documents
+                          .map((doc) => _buildItemWidget(doc))
+                          .toList(),
                     );
-                  }
-              ),
+                  }),
             ],
           ),
         ),
@@ -682,7 +706,8 @@ class _EventState extends State<Event> {
 
   //이벤트 생성 및 상세 페이지로 연결
   Widget _buildItemWidget(DocumentSnapshot doc) {
-    final event = EventInfo(doc['title'], doc['subtitle'], doc['main_img'], doc['date'], doc['reward'], doc['event_url']);
+    final event = EventInfo(doc['title'], doc['subtitle'], doc['main_img'],
+        doc['date'], doc['reward'], doc['event_url']);
 
     var now = new DateTime.now();
 
@@ -694,12 +719,18 @@ class _EventState extends State<Event> {
           onTap: () => _eventDetail(event),
           child: Column(
             children: <Widget>[
-              AutoSizeText(event.title, ),
-              Image.network(event.main_img, width: 70, height: 70,),
-              AutoSizeText(event.subtitle,),
-              Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Text(event.date)),
+              AutoSizeText(
+                event.title,
+              ),
+              Image.network(
+                event.main_img,
+                width: 70,
+                height: 70,
+              ),
+              AutoSizeText(
+                event.subtitle,
+              ),
+              Align(alignment: Alignment.bottomCenter, child: Text(event.date)),
             ],
           ),
         ),
@@ -709,7 +740,6 @@ class _EventState extends State<Event> {
 
   //이벤트 상세페이지
   Widget _eventDetail(EventInfo event) {
-
     final eventDetail = event.event_url;
 
     return Text('이벤트 상세페이지 입니다');
@@ -1006,7 +1036,7 @@ class _TipsState extends State<Tips> {
         child: Center(
           child: ListView(
             children: <Widget>[
-              StreamBuilder<QuerySnapshot> (
+              StreamBuilder<QuerySnapshot>(
                 stream: Firestore.instance.collection('Tips').snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
@@ -1014,12 +1044,14 @@ class _TipsState extends State<Tips> {
                   }
                   final documents = snapshot.data.documents;
                   return Column(
-                    children: documents.map((doc) => _buildItemWidget(doc)).toList(),
+                    children:
+                        documents.map((doc) => _buildItemWidget(doc)).toList(),
                   );
                 },
               ),
-              SizedBox( height: 30,),
-
+              SizedBox(
+                height: 30,
+              ),
             ],
           ),
         ),
@@ -1027,7 +1059,7 @@ class _TipsState extends State<Tips> {
     );
   }
 
-  Widget _buildItemWidget (DocumentSnapshot doc) {
+  Widget _buildItemWidget(DocumentSnapshot doc) {
     final tip = TipInfo(doc['title'], doc['subtitle'], doc['main_img']);
 
     return InkWell(
@@ -1036,30 +1068,26 @@ class _TipsState extends State<Tips> {
       child: Card(
         semanticContainer: true,
         clipBehavior: Clip.antiAliasWithSaveLayer,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16.0)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
         child: Container(
           height: 250,
           decoration: BoxDecoration(
             image: DecorationImage(
-              image: NetworkImage(
-                  tip.main_img),
+              image: NetworkImage(tip.main_img),
               fit: BoxFit.fitWidth,
               alignment: Alignment.topCenter,
             ),
           ),
-          child: Align(
-              alignment: Alignment.bottomCenter,
-              child: Text(tip.title)),
+          child:
+              Align(alignment: Alignment.bottomCenter, child: Text(tip.title)),
         ),
       ),
     );
   }
 
   //tip 상세화면 보여주는 함수를 임의로 만들어놨습니다
-  Widget _tipDetail() {
-
-  }
+  Widget _tipDetail() {}
 }
 
 //마이페이지
@@ -1068,15 +1096,11 @@ class MyPage extends StatefulWidget {
   _MyPageState createState() => _MyPageState();
 }
 
-
 DateTime now = DateTime.now();
 DateTime _selectedTime;
 
 class _MyPageState extends State<MyPage> {
   @override
-
-
-
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -1087,101 +1111,104 @@ class _MyPageState extends State<MyPage> {
       body: ListView(
         children: <Widget>[
           _buildTop(),
-        Center(
-          child: Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16.0),
-            ),
-            elevation: 4.0,
-            child: Container(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Column(
-                  children: [
-                    RaisedButton(
-                      onPressed: (){
-                        Future<DateTime> selectedDate = showDatePicker(
-                          context: context,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(2018),
-                          lastDate: DateTime(2030),
-                          builder: (BuildContext context, Widget child){
-                            return Theme(
-                              data: ThemeData.dark(),
-                              child: child,
-                            );
-                          },
-                        );
-
-                        selectedDate.then((dateTime) {
-                          setState(() {
-                            _selectedTime = dateTime;
-                          });
-                        });
-                      },
-                      child: Text('Today : ${now.year.toString()} / ${now.month.toString()}', style: TextStyle(fontSize: 30)),
-                    ),
-                    Text('Tap the button above to change the date\n'),
-                    //Text('${_selectedTime.year.toString()} - ${_selectedTime.month.toString()}', style: TextStyle(fontSize: 35),),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: <Widget>[
-                        Column(
-                          children: <Widget>[
-                            Icon(
-                              Icons.stars,
-                              size: 100,
-                              color: Colors.amber,
-                            ),
-                            Text('Number of Challenges'),
-                            StreamBuilder<QuerySnapshot>(
-                              stream: Firestore.instance.collection('userData').snapshots(),
-                              builder: (context, snapshot) {
-                                if (!snapshot.hasData) {
-                                  return CircularProgressIndicator();
-                                }
-                                final documents = snapshot.data.documents;
-                                return Column(
-                                  children:
-                                  documents.map((doc) => _buildMyPageItemWidget(doc)).toList(),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                        Column(
-                          children: <Widget>[
-                            Icon(
-                              Icons.event_available,
-                              size: 100,
-                              color: Colors.amber,
-                            ),
-                            Text('Number of Event'),
-                            Text(
-                              '2',
-                              style: TextStyle(fontSize: 25),
-                            )
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+          Center(
+            child: Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
               ),
-              width: 380,
-              height: 250,
+              elevation: 4.0,
+              child: Container(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 10),
+                  child: Column(
+                    children: [
+                      RaisedButton(
+                        onPressed: () {
+                          Future<DateTime> selectedDate = showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime(2018),
+                            lastDate: DateTime(2030),
+                            builder: (BuildContext context, Widget child) {
+                              return Theme(
+                                data: ThemeData.dark(),
+                                child: child,
+                              );
+                            },
+                          );
+
+                          selectedDate.then((dateTime) {
+                            setState(() {
+                              _selectedTime = dateTime;
+                            });
+                          });
+                        },
+                        child: Text(
+                            'Today : ${now.year.toString()} / ${now.month.toString()}',
+                            style: TextStyle(fontSize: 30)),
+                      ),
+                      Text('Tap the button above to change the date\n'),
+                      //Text('${_selectedTime.year.toString()} - ${_selectedTime.month.toString()}', style: TextStyle(fontSize: 35),),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: <Widget>[
+                          Column(
+                            children: <Widget>[
+                              Icon(
+                                Icons.stars,
+                                size: 100,
+                                color: Colors.amber,
+                              ),
+                              Text('Number of Challenges'),
+                              StreamBuilder<QuerySnapshot>(
+                                stream: Firestore.instance
+                                    .collection('userData')
+                                    .snapshots(),
+                                builder: (context, snapshot) {
+                                  if (!snapshot.hasData) {
+                                    return CircularProgressIndicator();
+                                  }
+                                  final document =
+                                      snapshot.data.documents.first;
+                                  final monthlyCount = document['monthlyCount'];
+                                  return Text(
+                                    '$monthlyCount',
+                                    style: TextStyle(fontSize: 25),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                          Column(
+                            children: <Widget>[
+                              Icon(
+                                Icons.event_available,
+                                size: 100,
+                                color: Colors.amber,
+                              ),
+                              Text('Number of Event'),
+                              Text(
+                                '2',
+                                style: TextStyle(fontSize: 25),
+                              )
+                            ],
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                width: 380,
+                height: 250,
+              ),
             ),
           ),
-        ),
           //Text('${_selectedTime.year.toString()}-${_selectedTime.month.toString()}'),
 
           _buildBottom(),
         ],
       ),
-
-
     );
-
   }
 }
 
@@ -1190,7 +1217,8 @@ Widget _buildTop() {
     padding: const EdgeInsets.only(left: 14, right: 14, top: 10, bottom: 10),
     child: Column(
       children: <Widget>[
-        Text('GREEN DAY에 오신 것을 환영합니다.',style: TextStyle(fontSize: 20,color: Colors.teal[700]))
+        Text('GREEN DAY에 오신 것을 환영합니다.',
+            style: TextStyle(fontSize: 20, color: Colors.teal[700]))
         /*
         TextField(
           style: TextStyle(height: 0.3),
@@ -1209,19 +1237,6 @@ Widget _buildTop() {
     ),
   );
 }
-
-
-
-//마이페이지의 챌린지 성공 횟수 위젯
-Widget _buildMyPageItemWidget(DocumentSnapshot doc) {
-  final monthlyCount = doc['monthlyCount'];
-
-  return Text(
-    '$monthlyCount',
-    style: TextStyle(fontSize: 25),
-  );
-}
-
 
 Widget _buildBottom() {
   var _isChecked = false;
@@ -1251,11 +1266,12 @@ Widget _buildBottom() {
       ),
       ListTile(
         leading: Icon(Icons.chevron_right),
-        title: Text('ABOUT GREEN DAY\n\nThe Green Day application created by 4 dsc sungshin members was planned with the '
-                'focus on the destruction of the ecosystem of animals such as rising sleep and depletion of resources due to climate change.\n\n '
-                'Your daily challenges will make polar bears, elephants, bengal tigers and cheetahs happy.\n '
-                'You can also view and experience various information and events related to the environment.\n\n '
-                'Please praise yourself for your efforts for future generations through this application.\n\nThank you.'),
+        title: Text(
+            'ABOUT GREEN DAY\n\nThe Green Day application created by 4 dsc sungshin members was planned with the '
+            'focus on the destruction of the ecosystem of animals such as rising sleep and depletion of resources due to climate change.\n\n '
+            'Your daily challenges will make polar bears, elephants, bengal tigers and cheetahs happy.\n '
+            'You can also view and experience various information and events related to the environment.\n\n '
+            'Please praise yourself for your efforts for future generations through this application.\n\nThank you.'),
         subtitle: Text('[개발자 강예빈, 유민서, 윤여경, 이지은]'),
       ),
     ],
