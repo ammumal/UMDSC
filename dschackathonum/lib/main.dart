@@ -647,12 +647,13 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
   }
 }
 
+//이벤트 페이지
 class Event extends StatefulWidget {
   @override
   _EventState createState() => _EventState();
 }
 
-//Event class
+//Event class (db field)
 class EventInfo {
   String title;
   String subtitle;
@@ -662,11 +663,10 @@ class EventInfo {
   String event_url;
   bool is_done;
 
-  EventInfo(this.title, this.subtitle, this.main_img, this.date, this.reward,
-      this.event_url,
-      {this.is_done = false});
+  EventInfo(this.title, this.subtitle, this.main_img, this.date, this.reward, this.event_url, {this.is_done = false});
 }
 
+//이벤트 기본 화면입니다 여기에 이벤트 인스턴스 틀을 따로 만들어서 넣어주었어요
 class _EventState extends State<Event> {
   @override
   Widget build(BuildContext context) {
@@ -692,11 +692,10 @@ class _EventState extends State<Event> {
                     }
                     final documents = snapshot.data.documents;
                     return Column(
-                      children: documents
-                          .map((doc) => _buildItemWidget(doc))
-                          .toList(),
+                      children: documents.map((doc) => _buildItemWidget(doc)).toList(),
                     );
-                  }),
+                  }
+              ),
             ],
           ),
         ),
@@ -704,10 +703,9 @@ class _EventState extends State<Event> {
     );
   }
 
-  //이벤트 생성 및 상세 페이지로 연결
+  //이벤트 생성
   Widget _buildItemWidget(DocumentSnapshot doc) {
-    final event = EventInfo(doc['title'], doc['subtitle'], doc['main_img'],
-        doc['date'], doc['reward'], doc['event_url']);
+    final event = EventInfo(doc['title'], doc['subtitle'], doc['main_img'], doc['date'], doc['reward'], doc['event_url']);
 
     var now = new DateTime.now();
 
@@ -716,291 +714,99 @@ class _EventState extends State<Event> {
         width: double.infinity,
         height: 200,
         child: InkWell(
-          onTap: () => _eventDetail(event),
+          onTap: () => Navigator.push(context,
+          MaterialPageRoute(builder: (context) => EventDetail())),
           child: Column(
             children: <Widget>[
-              AutoSizeText(
-                event.title,
+              Row(
+                children: <Widget>[
+                  SizedBox(width: 15,),
+                  Image.network(event.main_img, width: 150, height: 150,),
+                  SizedBox(width: 15,),
+                  Expanded(child: Text(event.title,)),
+                  // AutoSizeText(event.subtitle,),
+                ],
               ),
-              Image.network(
-                event.main_img,
-                width: 70,
-                height: 70,
-              ),
-              AutoSizeText(
-                event.subtitle,
-              ),
-              Align(alignment: Alignment.bottomCenter, child: Text(event.date)),
+              SizedBox(height: 15,),
+              Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Text('마감 날짜: ' + event.date)),
             ],
           ),
         ),
       ),
     );
   }
-
-  //이벤트 상세페이지
-  Widget _eventDetail(EventInfo event) {
-    final eventDetail = event.event_url;
-
-    return Text('이벤트 상세페이지 입니다');
-  }
 }
 
-//이벤트 상세페이지
+//이벤트 상세 페이지
 class EventDetail extends StatefulWidget {
-  EventDetail({Key key, this.title, EventInfo event}) : super(key: key);
-
-  final String title;
-
   @override
   _EventDetailState createState() => _EventDetailState();
 }
 
 class _EventDetailState extends State<EventDetail> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.of(context).size;
-    double width = screenSize.width;
-    double height = screenSize.height;
-
     return Scaffold(
       appBar: AppBar(
-        title: Text('Event'),
-        backgroundColor: Colors.blueAccent,
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(width * 0.024),
-        child: ListView(
-          children: <Widget>[
-            Container(
-              color: Colors.blue[100],
-              child: Row(
-                children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.all(width * 0.024),
-                    child: Image.asset(
-                      'images/sample.png',
-                      width: width * 0.2,
-                      height: width * 0.2,
-                    ),
-                  ),
-                  Container(
-                    width: width * 0.7,
-                    height: width * 0.3,
-                    child: Column(
-                      children: <Widget>[
-                        Padding(
-                          padding: EdgeInsets.only(bottom: width * 0.04),
-                        ),
-                        Text(
-                          '2020환경의 날 SNS국민 참여 이벤트',
-                          style: TextStyle(
-                            fontSize: 15,
-                          ),
-                          textAlign: TextAlign.left,
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(bottom: width * 0.024),
-                        ),
-                        Text(
-                          '2021년 02월 01일 ~ 2021년 2월 28일',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(bottom: width * 0.024),
-                        ),
-                        Container(
-                          alignment: Alignment.center,
-                          child: Row(
-                            children: <Widget>[
-                              Icon(
-                                Icons.money_off,
-                                size: 12,
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(width * 0.002),
-                              ),
-                              Text(
-                                '편의점 상품권 2천원',
-                                style: TextStyle(fontSize: 12),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            Container(
-              color: Colors.blue[100],
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.all(width * 0.024),
-                    child: Image.asset(
-                      'images/sample.png',
-                      width: width * 0.95,
-                    ),
-                  ),
-                  SizedBox(
-                    height: width * 0.024,
-                  ),
-                  Container(
-                    width: width * 0.8,
-                    child: Text(
-                      "This text is very very very very very very very very very very very very very very very very very very very very very very very very very long",
-                    ),
-                  ),
-                  SizedBox(
-                    height: width * 0.024,
-                  ),
-                  RaisedButton(
-                    child: Text(
-                      '참가하기',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    color: Colors.pink[100],
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-            ),
-          ],
+        backgroundColor: Colors.lightGreen,
+        title: Text(
+          'Event Detail',
+          style: TextStyle(color: Colors.white),
         ),
+      ),
+      body: Column(
+        children: <Widget>[
+          StreamBuilder<QuerySnapshot>(
+              stream: Firestore.instance.collection('Event').snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return CircularProgressIndicator();
+                }
+                final documents = snapshot.data.documents;
+                return Column(
+                  children: documents.map((doc) => _buildItemWidget(doc)).toList(),
+                );
+              }
+          ),
+        ],
       ),
     );
   }
-}
 
-//팁 상세페이지
-class TipsDetail extends StatefulWidget {
-  @override
-  _TipsDetailState createState() => _TipsDetailState();
-}
+  Widget _buildItemWidget(DocumentSnapshot doc) {
+    final event = EventInfo(doc['title'], doc['subtitle'], doc['main_img'], doc['date'], doc['reward'], doc['event_url']);
 
-class _TipsDetailState extends State<TipsDetail> {
-  @override
-  Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.of(context).size;
-    double width = screenSize.width;
-    double height = screenSize.height;
+    var now = new DateTime.now();
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Information'),
-        backgroundColor: Colors.blueAccent,
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(width * 0.024),
-        child: ListView(
-          children: <Widget>[
-            Container(
-              color: Colors.blue[100],
-              child: Row(
-                children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.all(width * 0.024),
-                    child: Image.asset(
-                      'images/sample.png',
-                      width: width * 0.2,
-                      height: width * 0.2,
-                    ),
-                  ),
-                  Container(
-                    width: width * 0.7,
-                    height: width * 0.3,
-                    child: Column(
-                      children: <Widget>[
-                        Padding(
-                          padding: EdgeInsets.only(bottom: width * 0.04),
-                        ),
-                        Text(
-                          '2020환경의 날 SNS국민 참여 이벤트',
-                          style: TextStyle(
-                            fontSize: 15,
-                          ),
-                          textAlign: TextAlign.left,
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(bottom: width * 0.024),
-                        ),
-                        Text(
-                          '2021년 02월 01일 ~ 2021년 2월 28일',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.only(bottom: width * 0.024),
-                        ),
-                        Container(
-                          alignment: Alignment.center,
-                          child: Row(
-                            children: <Widget>[
-                              Icon(
-                                Icons.money_off,
-                                size: 12,
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(width * 0.002),
-                              ),
-                              Text(
-                                '편의점 상품권 2천원',
-                                style: TextStyle(fontSize: 12),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            Container(
-              color: Colors.blue[100],
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.all(width * 0.024),
-                    child: Image.asset(
-                      'images/sample.png',
-                      width: width * 0.95,
-                    ),
-                  ),
-                  SizedBox(
-                    height: width * 0.024,
-                  ),
-                  Container(
-                    width: width * 0.8,
-                    child: Text(
-                      "This text is very very very very very very very very very very very very very very very very very very very very very very very very very long",
-                    ),
-                  ),
-                  SizedBox(
-                    height: width * 0.024,
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+    return Center(
+      child: Column(
+        children: <Widget>[
+          SizedBox(height: 15,),
+          Image.network(event.main_img, width: 300, height: 300,),
+          SizedBox(height: 30,),
+          Text(event.subtitle),
+          SizedBox(height: 15,),
+          Row(
+            children: <Widget>[
+              Text('보상: '),
+              Text(event.reward),
+            ],
+          ),
+          RaisedButton(
+            onPressed: _launchEvent,
+            child: Text('참여하기'),
+          )
+        ],
       ),
     );
+  }
+
+  //참여하기 버튼 누르면 연결된 페이지(미완)
+  void _launchEvent() {
+
   }
 }
 
@@ -1020,6 +826,8 @@ class TipInfo {
 }
 
 class _TipsState extends State<Tips> {
+  final _url = "www.google.com" ;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1036,7 +844,7 @@ class _TipsState extends State<Tips> {
         child: Center(
           child: ListView(
             children: <Widget>[
-              StreamBuilder<QuerySnapshot>(
+              StreamBuilder<QuerySnapshot> (
                 stream: Firestore.instance.collection('Tips').snapshots(),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
@@ -1044,14 +852,12 @@ class _TipsState extends State<Tips> {
                   }
                   final documents = snapshot.data.documents;
                   return Column(
-                    children:
-                        documents.map((doc) => _buildItemWidget(doc)).toList(),
+                    children: documents.map((doc) => _buildItemWidget(doc)).toList(),
                   );
                 },
               ),
-              SizedBox(
-                height: 30,
-              ),
+              SizedBox( height: 30,),
+
             ],
           ),
         ),
@@ -1059,37 +865,43 @@ class _TipsState extends State<Tips> {
     );
   }
 
-  Widget _buildItemWidget(DocumentSnapshot doc) {
+  Widget _buildItemWidget (DocumentSnapshot doc) {
     final tip = TipInfo(doc['title'], doc['subtitle'], doc['main_img']);
 
     return InkWell(
-      // 메서드 이름은 임의로 정했고 상세페이지로 넘어가는 기능입니다!
-      onTap: () => _tipDetail(),
-      child: Card(
-        semanticContainer: true,
-        clipBehavior: Clip.antiAliasWithSaveLayer,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
-        child: Container(
-          height: 250,
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: NetworkImage(tip.main_img),
-              fit: BoxFit.fitWidth,
-              alignment: Alignment.topCenter,
+      onTap: _launchURL,
+      child: Column(
+        children: <Widget>[
+          Card(
+            semanticContainer: true,
+            clipBehavior: Clip.antiAliasWithSaveLayer,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0)),
+            child: Container(
+              height: 250,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage(
+                      tip.main_img),
+                  fit: BoxFit.fitWidth,
+                  alignment: Alignment.topCenter,
+                ),
+              ),
+              child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Text(tip.title)),
             ),
           ),
-          child:
-              Align(alignment: Alignment.bottomCenter, child: Text(tip.title)),
-        ),
+          SizedBox(height: 15,),
+        ],
       ),
     );
   }
 
-  //tip 상세화면 보여주는 함수를 임의로 만들어놨습니다
-  Widget _tipDetail() {}
+  //웹사이트로 넘어가는 메서드(미완)
+  void _launchURL() async =>
+      await canLaunch(_url) ? await launch(_url) : throw 'Could not launch $_url';
 }
-
 //마이페이지
 class MyPage extends StatefulWidget {
   @override
