@@ -1,11 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:auto_size_text/auto_size_text.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-void main() => runApp(MaterialApp(title: 'MyApp', home: initViewsample()));
+//앱 페이지
+import 'event_page.dart';
+import 'tip_page.dart';
+import 'my_page.dart';
 
-int eventDone = 0;
+void main() => runApp(MaterialApp(title: 'MyApp', home: initViewsample()));
 
 class initViewsample extends StatelessWidget {
   @override
@@ -187,6 +188,7 @@ class UpdateDay {
 }
 
 UpdateDay updateDay = new UpdateDay();
+
 
 class Home extends StatefulWidget {
   @override
@@ -374,7 +376,7 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
               borderRadius: BorderRadius.circular(16.0),
             ),
             child: StreamBuilder<QuerySnapshot>(
-                //유저데이터
+              //유저데이터
                 stream: Firestore.instance.collection('userData').snapshots(),
                 builder: (context, snapshot1) {
                   if (!snapshot1.hasData) {
@@ -383,7 +385,7 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
                   return StreamBuilder<QuerySnapshot>(
                     //챌린지 데이터
                     stream:
-                        Firestore.instance.collection('challenge').snapshots(),
+                    Firestore.instance.collection('challenge').snapshots(),
                     builder: (context, snapshot2) {
                       if (!snapshot2.hasData) {
                         return CircularProgressIndicator();
@@ -458,11 +460,11 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
                   barrierDismissible: false,
                   builder: (BuildContext context) {
                     return AlertDialog(
-                        title: Text('하루가 지났습니다!'),
-                        content: Text('ok를 누르면 홈 화면으로 돌아갑니다.'),
+                        title: Text('The day has been changed!'),
+                        content: Text('Tap \'OK\' and return to Home screen.'),
                         actions: <Widget>[
                           FlatButton(
-                              child: Text('Ok'),
+                              child: Text('OK'),
                               onPressed: () {
                                 Navigator.of(context).pop();
                                 Navigator.of(context).pop();
@@ -480,8 +482,8 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
                   barrierDismissible: false,
                   builder: (BuildContext context) {
                     return AlertDialog(
-                        title: Text('이미 완료한 챌린지입니다!'),
-                        content: Text('Ok를 눌러 창을 닫아주세요.'),
+                        title: Text('You\'ve already completed this challenge!'),
+                        content: Text('TAP \'OK\' and close this message.'),
                         actions: <Widget>[
                           FlatButton(
                               child: Text('Ok'),
@@ -543,12 +545,11 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
               builder: (BuildContext context) {
                 return AlertDialog(
                   //실수로 클릭 방지용 재확인
-                  title: Text('챌린지를 클리어 하셨나요?'),
+                  title: Text('Did you clear your challenges?'),
                   content: SingleChildScrollView(
                     child: ListBody(
                       children: <Widget>[
-                        Text('클리어 하셨다면 Ok를,'),
-                        Text('아직 클리어 하지 않으셨다면 cancle을\n눌러주세요.'),
+                        Text('If you did it, tap \'OK\'. If not, tap \'CANCEL\''),
                       ],
                     ),
                   ),
@@ -563,11 +564,11 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
                                 barrierDismissible: false,
                                 builder: (BuildContext context) {
                                   return AlertDialog(
-                                      title: Text('하루가 지났습니다!'),
-                                      content: Text('ok를 누르면 홈 화면으로 돌아갑니다.'),
+                                      title: Text('The day has been changed!'),
+                                      content: Text('TAP \'OK\' and return to Home screen.'),
                                       actions: <Widget>[
                                         FlatButton(
-                                            child: Text('Ok'),
+                                            child: Text('OK'),
                                             onPressed: () {
                                               Navigator.of(context).pop();
                                               Navigator.of(context).pop();
@@ -585,12 +586,12 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
                             clearChallenge();
                           }
                         },
-                        child: Text('Ok')),
+                        child: Text('OK')),
                     FlatButton(
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
-                        child: Text('cancle')),
+                        child: Text('CANCEL')),
                   ],
                 );
               });
@@ -645,447 +646,4 @@ class _WeekChallengePageState extends State<WeekChallengePage> {
       );
     }
   }
-}
-
-//이벤트 페이지
-class Event extends StatefulWidget {
-  @override
-  _EventState createState() => _EventState();
-}
-
-//Event class (db field)
-class EventInfo {
-  String title;
-  String subtitle;
-  String main_img;
-  String date;
-  String reward;
-  String event_url;
-  bool is_done;
-
-  EventInfo(this.title, this.subtitle, this.main_img, this.date, this.reward, this.event_url, {this.is_done = false});
-}
-
-//이벤트 기본 화면입니다 여기에 이벤트 인스턴스 틀을 따로 만들어서 넣어주었어요
-class _EventState extends State<Event> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        centerTitle: true,
-        title: Text(
-          '이벤트',
-          style: TextStyle(color: Colors.green),
-        ),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(8.0),
-        child: Center(
-          child: ListView(
-            children: <Widget>[
-              StreamBuilder<QuerySnapshot>(
-                  stream: Firestore.instance.collection('Event').snapshots(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) {
-                      return CircularProgressIndicator();
-                    }
-                    final documents = snapshot.data.documents;
-                    return Column(
-                      children: documents.map((doc) => _buildItemWidget(doc)).toList(),
-                    );
-                  }
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  //이벤트 생성
-  Widget _buildItemWidget(DocumentSnapshot doc) {
-    final event = EventInfo(doc['title'], doc['subtitle'], doc['main_img'], doc['date'], doc['reward'], doc['event_url']);
-
-    var now = new DateTime.now();
-
-    return Card(
-      child: Container(
-        width: double.infinity,
-        height: 200,
-        child: InkWell(
-          onTap: () => Navigator.push(context,
-          MaterialPageRoute(builder: (context) => EventDetail())),
-          child: Column(
-            children: <Widget>[
-              Row(
-                children: <Widget>[
-                  SizedBox(width: 15,),
-                  Image.network(event.main_img, width: 150, height: 150,),
-                  SizedBox(width: 15,),
-                  Expanded(child: Text(event.title,)),
-                  // AutoSizeText(event.subtitle,),
-                ],
-              ),
-              SizedBox(height: 15,),
-              Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Text('마감 날짜: ' + event.date)),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-//이벤트 상세 페이지
-class EventDetail extends StatefulWidget {
-  @override
-  _EventDetailState createState() => _EventDetailState();
-}
-
-class _EventDetailState extends State<EventDetail> {
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
-        title: Text(
-          'Event Detail',
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
-      body: Column(
-        children: <Widget>[
-          StreamBuilder<QuerySnapshot>(
-              stream: Firestore.instance.collection('Event').snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return CircularProgressIndicator();
-                }
-                final documents = snapshot.data.documents;
-                return Column(
-                  children: documents.map((doc) => _buildItemWidget(doc)).toList(),
-                );
-              }
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildItemWidget(DocumentSnapshot doc) {
-    final event = EventInfo(doc['title'], doc['subtitle'], doc['main_img'], doc['date'], doc['reward'], doc['event_url']);
-
-    var now = new DateTime.now();
-
-    return Center(
-      child: Column(
-        children: <Widget>[
-          SizedBox(height: 15,),
-          Image.network(event.main_img, width: 300, height: 300,),
-          SizedBox(height: 30,),
-          Text(event.subtitle),
-          SizedBox(height: 15,),
-          Row(
-            children: <Widget>[
-              Text('보상: '),
-              Text(event.reward),
-            ],
-          ),
-          RaisedButton(
-            onPressed: _launchEvent,
-            child: Text('참여하기'),
-          )
-        ],
-      ),
-    );
-  }
-
-  //참여하기 버튼 누르면 연결된 페이지(미완)
-  void _launchEvent() {
-
-  }
-}
-
-//정보&팁 페이지
-class Tips extends StatefulWidget {
-  @override
-  _TipsState createState() => _TipsState();
-}
-
-//팁 클래스 선언 (DB에 사용할 필드)
-class TipInfo {
-  String title;
-  String subtitle;
-  String main_img;
-
-  TipInfo(this.title, this.subtitle, this.main_img);
-}
-
-class _TipsState extends State<Tips> {
-  final _url = "www.google.com" ;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        centerTitle: true,
-        title: Text(
-          '정보 & 꿀팁',
-          style: TextStyle(color: Colors.green),
-        ),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(8.0),
-        child: Center(
-          child: ListView(
-            children: <Widget>[
-              StreamBuilder<QuerySnapshot> (
-                stream: Firestore.instance.collection('Tips').snapshots(),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return CircularProgressIndicator();
-                  }
-                  final documents = snapshot.data.documents;
-                  return Column(
-                    children: documents.map((doc) => _buildItemWidget(doc)).toList(),
-                  );
-                },
-              ),
-              SizedBox( height: 30,),
-
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildItemWidget (DocumentSnapshot doc) {
-    final tip = TipInfo(doc['title'], doc['subtitle'], doc['main_img']);
-
-    return InkWell(
-      onTap: _launchURL,
-      child: Column(
-        children: <Widget>[
-          Card(
-            semanticContainer: true,
-            clipBehavior: Clip.antiAliasWithSaveLayer,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.0)),
-            child: Container(
-              height: 250,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: NetworkImage(
-                      tip.main_img),
-                  fit: BoxFit.fitWidth,
-                  alignment: Alignment.topCenter,
-                ),
-              ),
-              child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Text(tip.title)),
-            ),
-          ),
-          SizedBox(height: 15,),
-        ],
-      ),
-    );
-  }
-
-  //웹사이트로 넘어가는 메서드(미완)
-  void _launchURL() async =>
-      await canLaunch(_url) ? await launch(_url) : throw 'Could not launch $_url';
-}
-//마이페이지
-class MyPage extends StatefulWidget {
-  @override
-  _MyPageState createState() => _MyPageState();
-}
-
-DateTime now = DateTime.now();
-DateTime _selectedTime;
-
-class _MyPageState extends State<MyPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        centerTitle: true,
-        title: Text('my Page', style: TextStyle(color: Colors.green)),
-      ),
-      body: ListView(
-        children: <Widget>[
-          _buildTop(),
-          Center(
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16.0),
-              ),
-              elevation: 4.0,
-              child: Container(
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 10),
-                  child: Column(
-                    children: [
-                      RaisedButton(
-                        onPressed: () {
-                          Future<DateTime> selectedDate = showDatePicker(
-                            context: context,
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime(2018),
-                            lastDate: DateTime(2030),
-                            builder: (BuildContext context, Widget child) {
-                              return Theme(
-                                data: ThemeData.dark(),
-                                child: child,
-                              );
-                            },
-                          );
-
-                          selectedDate.then((dateTime) {
-                            setState(() {
-                              _selectedTime = dateTime;
-                            });
-                          });
-                        },
-                        child: Text(
-                            'Today : ${now.year.toString()} / ${now.month.toString()}',
-                            style: TextStyle(fontSize: 30)),
-                      ),
-                      Text('Tap the button above to change the date\n'),
-                      //Text('${_selectedTime.year.toString()} - ${_selectedTime.month.toString()}', style: TextStyle(fontSize: 35),),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Column(
-                            children: <Widget>[
-                              Icon(
-                                Icons.stars,
-                                size: 100,
-                                color: Colors.amber,
-                              ),
-                              Text('Number of Challenges'),
-                              StreamBuilder<QuerySnapshot>(
-                                stream: Firestore.instance
-                                    .collection('userData')
-                                    .snapshots(),
-                                builder: (context, snapshot) {
-                                  if (!snapshot.hasData) {
-                                    return CircularProgressIndicator();
-                                  }
-                                  final document =
-                                      snapshot.data.documents.first;
-                                  final monthlyCount = document['monthlyCount'];
-                                  return Text(
-                                    '$monthlyCount',
-                                    style: TextStyle(fontSize: 25),
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                          Column(
-                            children: <Widget>[
-                              Icon(
-                                Icons.event_available,
-                                size: 100,
-                                color: Colors.amber,
-                              ),
-                              Text('Number of Event'),
-                              Text(
-                                '2',
-                                style: TextStyle(fontSize: 25),
-                              )
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                width: 380,
-                height: 250,
-              ),
-            ),
-          ),
-          //Text('${_selectedTime.year.toString()}-${_selectedTime.month.toString()}'),
-
-          _buildBottom(),
-        ],
-      ),
-    );
-  }
-}
-
-Widget _buildTop() {
-  return Padding(
-    padding: const EdgeInsets.only(left: 14, right: 14, top: 10, bottom: 10),
-    child: Column(
-      children: <Widget>[
-        Text('GREEN DAY에 오신 것을 환영합니다.',
-            style: TextStyle(fontSize: 20, color: Colors.teal[700]))
-        /*
-        TextField(
-          style: TextStyle(height: 0.3),
-          decoration: InputDecoration(
-              border: OutlineInputBorder(), labelText: 'email을 입력하세요'),
-        ),
-        TextField(
-          style: TextStyle(height: 0.3),
-          decoration: InputDecoration(
-              border: OutlineInputBorder(), labelText: 'Password를 입력하세요'),
-        ),
-        Text('google 계정으로 로그인'),
-
-         */
-      ],
-    ),
-  );
-}
-
-Widget _buildBottom() {
-  var _isChecked = false;
-  /*
-  final items = List.generate(1, (i){
-    return ListTile(
-      leading: Icon(Icons.chevron_right),
-      title: Text('알람')
-  });
-  return ListView(
-    physics: NeverScrollableScrollPhysics(),
-    shrinkWrap: true,
-    children: items,
-  );
-  */
-  return Column(
-    children: <Widget>[
-      ListTile(
-        leading: Icon(Icons.chevron_right),
-        title: Text('Alarm setting'),
-        trailing: Switch(
-          value: _isChecked,
-          onChanged: (value) {
-            _isChecked = value;
-          },
-        ),
-      ),
-      ListTile(
-        leading: Icon(Icons.chevron_right),
-        title: Text(
-            'ABOUT GREEN DAY\n\nThe Green Day application created by 4 dsc sungshin members was planned with the '
-            'focus on the destruction of the ecosystem of animals such as rising sleep and depletion of resources due to climate change.\n\n '
-            'Your daily challenges will make polar bears, elephants, bengal tigers and cheetahs happy.\n '
-            'You can also view and experience various information and events related to the environment.\n\n '
-            'Please praise yourself for your efforts for future generations through this application.\n\nThank you.'),
-        subtitle: Text('[개발자 강예빈, 유민서, 윤여경, 이지은]'),
-      ),
-    ],
-  );
 }
