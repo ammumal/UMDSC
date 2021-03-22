@@ -60,51 +60,53 @@ class _MyPageState extends State<MyPage> {
                       ),
                       Text('Tap the button above to change the date\n'),
                       //Text('${_selectedTime.year.toString()} - ${_selectedTime.month.toString()}', style: TextStyle(fontSize: 35),),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: <Widget>[
-                          Column(
+
+                      //챌린지 성공 횟수, 이벤트 성공 횟수
+                      StreamBuilder<QuerySnapshot>(
+                        stream: Firestore.instance
+                            .collection('userData')
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return CircularProgressIndicator();
+                          }
+                          final document = snapshot.data.documents.first;
+                          final monthlyCount = document['monthlyCount'];
+                          final monthlyCountE = document['monthlyCountE'];
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: <Widget>[
-                              Icon(
-                                Icons.stars,
-                                size: 100,
-                                color: Colors.amber,
-                              ),
-                              Text('Number of Challenges'),
-                              StreamBuilder<QuerySnapshot>(
-                                stream: Firestore.instance
-                                    .collection('userData')
-                                    .snapshots(),
-                                builder: (context, snapshot) {
-                                  if (!snapshot.hasData) {
-                                    return CircularProgressIndicator();
-                                  }
-                                  final document =
-                                      snapshot.data.documents.first;
-                                  final monthlyCount = document['monthlyCount'];
-                                  return Text(
+                              Column(
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.stars,
+                                    size: 100,
+                                    color: Colors.amber,
+                                  ),
+                                  Text('Number of Challenges'),
+                                  Text(
                                     '$monthlyCount',
                                     style: TextStyle(fontSize: 25),
-                                  );
-                                },
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                children: <Widget>[
+                                  Icon(
+                                    Icons.event_available,
+                                    size: 100,
+                                    color: Colors.amber,
+                                  ),
+                                  Text('Number of Event'),
+                                  Text(
+                                    '$monthlyCountE',
+                                    style: TextStyle(fontSize: 25),
+                                  ),
+                                ],
                               ),
                             ],
-                          ),
-                          Column(
-                            children: <Widget>[
-                              Icon(
-                                Icons.event_available,
-                                size: 100,
-                                color: Colors.amber,
-                              ),
-                              Text('Number of Event'),
-                              Text(
-                                '2',
-                                style: TextStyle(fontSize: 25),
-                              )
-                            ],
-                          ),
-                        ],
+                          );
+                        },
                       ),
                     ],
                   ),
@@ -179,10 +181,10 @@ Widget _buildBottom() {
         leading: Icon(Icons.chevron_right),
         title: Text(
             'ABOUT GREEN DAY\n\nThe Green Day application created by 4 dsc sungshin members was planned with the '
-                'focus on the destruction of the ecosystem of animals such as rising sleep and depletion of resources due to climate change.\n\n '
-                'Your daily challenges will make polar bears, elephants, bengal tigers and cheetahs happy.\n '
-                'You can also view and experience various information and events related to the environment.\n\n '
-                'Please praise yourself for your efforts for future generations through this application.\n\nThank you.'),
+            'focus on the destruction of the ecosystem of animals such as rising sleep and depletion of resources due to climate change.\n\n '
+            'Your daily challenges will make polar bears, elephants, bengal tigers and cheetahs happy.\n '
+            'You can also view and experience various information and events related to the environment.\n\n '
+            'Please praise yourself for your efforts for future generations through this application.\n\nThank you.'),
         subtitle: Text('[Developers: Yebin Kang, Minseo Yoo, Jieun Lee]'),
       ),
     ],

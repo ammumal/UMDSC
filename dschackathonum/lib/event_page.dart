@@ -18,7 +18,8 @@ class EventInfo {
   String event_url;
   bool is_done;
 
-  EventInfo(this.id, this.title, this.subtitle, this.main_img, this.date, this.reward, this.event_url, {this.is_done = false});
+  EventInfo(this.id, this.title, this.subtitle, this.main_img, this.date,
+      this.reward, this.event_url, {this.is_done = false});
 }
 
 //이벤트 기본 화면입니다 여기에 이벤트 인스턴스 틀을 따로 만들어서 넣어주었어요
@@ -47,7 +48,8 @@ class _EventState extends State<Event> {
                     }
                     final documents = snapshot.data.documents;
                     return Column(
-                      children: documents.map((doc) => _buildItemWidget(doc)).toList(),
+                      children: documents.map((doc) => _buildItemWidget(doc))
+                          .toList(),
                     );
                   }
               ),
@@ -60,8 +62,14 @@ class _EventState extends State<Event> {
 
   //이벤트 생성
   Widget _buildItemWidget(DocumentSnapshot doc) {
-
-    final event = EventInfo(doc['id'], doc['title'], doc['subtitle'], doc['main_img'], doc['date'], doc['reward'], doc['event_url']);
+    final event = EventInfo(
+        doc['id'],
+        doc['title'],
+        doc['subtitle'],
+        doc['main_img'],
+        doc['date'],
+        doc['reward'],
+        doc['event_url']);
     var eventId = event.id;
 
     return Card(
@@ -69,9 +77,11 @@ class _EventState extends State<Event> {
         width: double.infinity,
         height: 200,
         child: InkWell(
-          onTap: () => Navigator.push(context,
-              MaterialPageRoute(builder: (context) => EventDetail(eventId: eventId,))
-          ),
+          onTap: () =>
+              Navigator.push(context,
+                  MaterialPageRoute(
+                      builder: (context) => EventDetail(eventId: eventId,))
+              ),
           child: Column(
             children: <Widget>[
               Row(
@@ -114,53 +124,130 @@ class _EventDetailState extends State<EventDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.lightGreen,
-        title: Text(
-          'Event Detail',
-          style: TextStyle(color: Colors.white),
+        appBar: AppBar(
+          backgroundColor: Colors.lightGreen,
+          title: Text(
+            'Event Detail',
+            style: TextStyle(color: Colors.white),
+          ),
         ),
-      ),
-      body: Column(
-        children: <Widget>[
-          StreamBuilder(
-            stream: Firestore.instance.collection('Event').document(eventId).snapshots(),
+        body: StreamBuilder(
+            stream: Firestore.instance.collection('Event')
+                .document(eventId)
+                .snapshots(),
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               if (snapshot.hasData == false) {
                 return CircularProgressIndicator();
               }
-              var event = snapshot.data;
-              return Center(
-                child: Column(
-                  children: <Widget>[
-                    SizedBox(height: 15,),
-                    Image.network(event['main_img'], width: 300, height: 300,),
-                    SizedBox(height: 30,),
-                    Text(event['subtitle']),
-                    SizedBox(height: 15,),
-                    Row(
-                      children: <Widget>[
-                        Text('보상: '),
-                        Text(event['reward']),
-                      ],
-                    ),
-                    RaisedButton(
-                      onPressed: _launchEvent,
-                      child: Text('참여하기'),
-                    )
-                  ],
-                ),
+              return StreamBuilder<QuerySnapshot>(
+                stream: Firestore.instance.collection('userData').snapshots(),
+                builder: (context, snapshot2) {
+                  if (snapshot2.hasData == false) {
+                    return CircularProgressIndicator();
+                  }
+                  final event = snapshot.data;
+                  final userData = snapshot2.data.documents.first;
+
+                  return _launchEvent(event, userData);
+                },
               );
-            },
+            }
+        ));
+  }
+
+  //참여하기 버튼 누르면 연결된 페이지
+  Widget _launchEvent(DocumentSnapshot doc, DocumentSnapshot doc2) {
+
+    //참여하기 버튼 눌렀을 때, 참여하지 않은 경우 실행
+    clearEvent() {
+        Firestore.instance
+            .collection('Event')
+            .document(doc.documentID)
+            .updateData({'is_done': !doc['is_done']});
+        Firestore.instance
+            .collection('userData')
+            .document(doc2.documentID)
+            .updateData({'monthlyCountE': 1 + doc2['monthlyCountE']});
+    }
+
+    return Center(
+      child: Column(
+        children: <Widget>[
+          SizedBox(height: 15,),
+          Image.network(
+            doc['main_img'], width: 300, height: 300,),
+          SizedBox(height: 30,),
+          Padding(
+            padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+            child: Text(
+                doc['subtitle'],
+                style: TextStyle(fontSize: 16.0),
+            ),
           ),
+          SizedBox(height: 15,),
+          Padding(
+            padding: const EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
+            child: Row(
+              children: <Widget>[
+                Text('보상: ',
+                  style: TextStyle(fontSize: 16.0),
+                ),
+                Text(doc['reward'],
+                  style: TextStyle(fontSize: 16.0),
+                ),
+              ],
+            ),
+          ),
+          RaisedButton(
+            onPressed: () {
+              if(!doc['is_done']) {
+                clearEvent();
+                showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                          title: Text('You complete this event!'),
+                          content: Text('TAP \'OK\' and go to the event website'),
+                          actions: <Widget>[
+                            FlatButton(
+                                child: Text('OK'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+
+                                  //이벤트 페이지 이동
+
+                                })
+                          ]);
+                    });
+              } else {
+                showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                          title: Text('You\'ve already completed this event!'),
+                          content: Text('TAP \'OK\' and go to the event website.'),
+                          actions: <Widget>[
+                            FlatButton(
+                                child: Text('OK'),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+
+                                  //이벤트 페이지 이동
+
+                                })
+                          ]);
+                    });
+              }
+            },
+            child: Text('참여하기',
+                style: TextStyle(fontSize: 20.0, color: Colors.white)),
+            color: Colors.lightGreen,
+          )
         ],
       ),
     );
-  }
-
-  //참여하기 버튼 누르면 연결된 페이지(미완)
-  void _launchEvent() {
-
   }
 }
 

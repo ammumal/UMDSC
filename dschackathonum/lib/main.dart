@@ -79,8 +79,8 @@ class _initViewState extends State<initView> {
                 },
               ),
               RaisedButton(
-                child: Text('CHOICE!', style: TextStyle(fontSize: 20.0)),
-                color: Colors.blueGrey,
+                child: Text('CHOICE!', style: TextStyle(fontSize: 20.0, color: Colors.white)),
+                color: Colors.lightGreen,
                 onPressed: () {
                   Navigator.push(context,
                       MaterialPageRoute(builder: (context) => MyApp()));
@@ -269,12 +269,16 @@ class _HomeState extends State<Home> {
 
     //하루가 지났을 경우, 날짜 변경 시간을 다음 날로 업데이트
     if (now.isAfter(updateDay.dt)) {
-      //한 달이 지났을 경우(월이 달라질 경우) 메인 페이지 챌린지 횟수 초기화
+      //한 달이 지났을 경우(월이 달라질 경우) 메인 페이지 챌린지 횟수, 이벤트 횟수 초기화
       if (now.month != updateDay.dt.month) {
         Firestore.instance
             .collection('userData')
             .document(doc.documentID)
             .updateData({'monthlyCount': 0});
+        Firestore.instance
+            .collection('userData')
+            .document(doc.documentID)
+            .updateData({'monthlyCountE': 0});
       }
       Firestore.instance
           .collection('userData')
