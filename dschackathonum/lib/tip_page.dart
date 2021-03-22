@@ -8,16 +8,16 @@ class Tips extends StatefulWidget {
 }
 
 //팁 클래스 선언 (DB에 사용할 필드)
-class TipInfo {
+class TipsInfo {
+  String id;
   String title;
-  String subtitle;
+  String thumbnail;
   String main_img;
 
-  TipInfo(this.title, this.subtitle, this.main_img);
+  TipsInfo(this.id, this.title, this.thumbnail, this.main_img);
 }
 
 class _TipsState extends State<Tips> {
-  final _url = "www.google.com" ;
 
   @override
   Widget build(BuildContext context) {
@@ -57,10 +57,13 @@ class _TipsState extends State<Tips> {
   }
 
   Widget _buildItemWidget (DocumentSnapshot doc) {
-    final tip = TipInfo(doc['title'], doc['subtitle'], doc['main_img']);
+    final tips = TipsInfo(doc['id'], doc['title'], doc['thumbnail'], doc['main_img']);
+    var tipsId = tips.id;
 
     return InkWell(
-      onTap: _launchURL,
+      onTap: () => Navigator.push(context,
+          MaterialPageRoute(builder: (context) => TipsDetail(tipsId: tipsId,))
+      ),
       child: Column(
         children: <Widget>[
           Card(
@@ -73,14 +76,14 @@ class _TipsState extends State<Tips> {
               decoration: BoxDecoration(
                 image: DecorationImage(
                   image: NetworkImage(
-                      tip.main_img),
+                      tips.thumbnail),
                   fit: BoxFit.fitWidth,
                   alignment: Alignment.topCenter,
                 ),
               ),
               child: Align(
                   alignment: Alignment.bottomCenter,
-                  child: Text(tip.title)),
+                  child: Text(tips.title)),
             ),
           ),
           SizedBox(height: 15,),
@@ -88,7 +91,57 @@ class _TipsState extends State<Tips> {
       ),
     );
   }
+}
 
-  //웹사이트로 넘어가는 메서드(미완)
-  void _launchURL() {}
+//Tips 상세페이지
+class TipsDetail extends StatefulWidget {
+  final String tipsId;
+
+  TipsDetail({@required this.tipsId});
+
+  @override
+  _TipsDetailState createState() => _TipsDetailState(tipsId: tipsId);
+}
+
+
+
+class _TipsDetailState extends State<TipsDetail> {
+
+  var tipsId;
+  _TipsDetailState({@required this.tipsId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.lightGreen,
+        title: Text(
+          'Tips Detail',
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            StreamBuilder(
+              stream: Firestore.instance.collection('Tips').document(tipsId).snapshots(),
+              builder: (BuildContext context, AsyncSnapshot snapshot) {
+                if (snapshot.hasData == false) {
+                  return CircularProgressIndicator();
+                }
+                var tips = snapshot.data;
+                return Center(
+                  child: Column(
+                    children: <Widget>[
+                      Image.network(tips['main_img']),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

@@ -156,7 +156,6 @@ class _EventDetailState extends State<EventDetail> {
         ],
       ),
     );
-
   }
 
   //참여하기 버튼 누르면 연결된 페이지(미완)
