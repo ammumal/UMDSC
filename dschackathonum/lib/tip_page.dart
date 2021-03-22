@@ -81,9 +81,6 @@ class _TipsState extends State<Tips> {
                   alignment: Alignment.topCenter,
                 ),
               ),
-              child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Text(tips.title)),
             ),
           ),
           SizedBox(height: 15,),
