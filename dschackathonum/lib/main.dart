@@ -30,8 +30,8 @@ class initView extends StatefulWidget {
 }
 
 class _initViewState extends State<initView> {
-  final _valueList = ['북극곰', '코끼리', '뱅갈호랑이', '치타'];
-  var _selectedValue = '북극곰';
+  final _valueList = ['Polar Bear', 'Elephant', 'Bengal tiger', 'Cheetah'];
+  var _selectedValue = 'Polar Bear';
 
   @override
   Widget build(BuildContext context) {
@@ -54,26 +54,32 @@ class _initViewState extends State<initView> {
                 onChanged: (value) {
                   setState(() {
                     _selectedValue = value;
-                    if (value == '북극곰') {
+                    if (value == 'Polar Bear') {
                       Firestore.instance
                           .collection('userData')
                           .document('ILMQl5nJoRBL7RlfLtrd')
                           .updateData({'animalNumber': 0});
-                    } else if (value == '코끼리') {
+                    } else if (value == 'Elephant') {
                       Firestore.instance
                           .collection('userData')
                           .document('ILMQl5nJoRBL7RlfLtrd')
                           .updateData({'animalNumber': 1});
-                    } else if (value == '뱅갈호랑이') {
+                    } else if (value == 'Bengal tiger') {
                       Firestore.instance
                           .collection('userData')
                           .document('ILMQl5nJoRBL7RlfLtrd')
                           .updateData({'animalNumber': 2});
-                    } else if (value == '치타') {
+                    } else if (value == 'Cheetah') {
                       Firestore.instance
                           .collection('userData')
                           .document('ILMQl5nJoRBL7RlfLtrd')
                           .updateData({'animalNumber': 3});
+                    }
+                    else if (value == null){
+                      Firestore.instance
+                          .collection('userData')
+                          .document('ILMQl5nJoRBL7RlfLtrd')
+                          .updateData({'animalNumber': 0});
                     }
                   });
                 },
