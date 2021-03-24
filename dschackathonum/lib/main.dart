@@ -88,7 +88,7 @@ class _initViewState extends State<initView> {
                 child: Text('CHOICE!', style: TextStyle(fontSize: 20.0, color: Colors.white)),
                 color: Colors.lightGreen,
                 onPressed: () {
-                  Navigator.push(context,
+                  Navigator.pushReplacement(context,
                       MaterialPageRoute(builder: (context) => MyApp()));
                 },
               ),
