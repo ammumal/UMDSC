@@ -6,7 +6,25 @@ import 'event_page.dart';
 import 'tip_page.dart';
 import 'my_page.dart';
 
-void main() => runApp(MaterialApp(title: 'MyApp', home: initViewsample()));
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firestore.instance
+      .collection('userData')
+      .document('ILMQl5nJoRBL7RlfLtrd').get().then((DocumentSnapshot ds){
+        if( ds.data['firstrun'] == false ){
+          Firestore.instance
+              .collection('userData')
+              .document('ILMQl5nJoRBL7RlfLtrd')
+              .updateData({'firstrun': true});
+          runApp(MaterialApp(home: initViewsample()));
+        }
+        else if(ds.data['firstrun']==true){
+          runApp(MaterialApp(home: MyApp()));
+        }
+      });
+  }
+
+
 
 class initViewsample extends StatelessWidget {
   @override
