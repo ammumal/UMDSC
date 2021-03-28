@@ -152,7 +152,10 @@ Widget _buildTop() {
 }
 
 Widget _buildBottom() {
-  var _isChecked = false;
+//   var _isChecked = false;
+  final _animalList = ['Polar Bear','Elephant','Bengal tiger','Cheetah'];
+  //firebase 연동 안하고 일단 북극곰으로 해놨어요..고치겠습니다
+  var _selectedAnimal = 'Polar Bear';
   /*
   final items = List.generate(1, (i){
     return ListTile(
@@ -169,13 +172,50 @@ Widget _buildBottom() {
     children: <Widget>[
       ListTile(
         leading: Icon(Icons.chevron_right),
-        title: Text('Alarm setting'),
-        trailing: Switch(
-          value: _isChecked,
-          onChanged: (value) {
-            _isChecked = value;
-          },
-        ),
+        title: Text('animal select'),
+        trailing: DropdownButton(
+                value: _selectedValue,
+                items: _valueList.map(
+                  (value) {
+                    return DropdownMenuItem(
+                      value: value,
+                      child: Text(value),
+                    );
+                  },
+                ).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedValue = value;
+                    if (value == 'Polar Bear') {
+                      Firestore.instance
+                          .collection('userData')
+                          .document('ILMQl5nJoRBL7RlfLtrd')
+                          .updateData({'animalNumber': 0});
+                    } else if (value == 'Elephant') {
+                      Firestore.instance
+                          .collection('userData')
+                          .document('ILMQl5nJoRBL7RlfLtrd')
+                          .updateData({'animalNumber': 1});
+                    } else if (value == 'Bengal tiger') {
+                      Firestore.instance
+                          .collection('userData')
+                          .document('ILMQl5nJoRBL7RlfLtrd')
+                          .updateData({'animalNumber': 2});
+                    } else if (value == 'Cheetah') {
+                      Firestore.instance
+                          .collection('userData')
+                          .document('ILMQl5nJoRBL7RlfLtrd')
+                          .updateData({'animalNumber': 3});
+                    }
+                    else if (value == null){
+                      Firestore.instance
+                          .collection('userData')
+                          .document('ILMQl5nJoRBL7RlfLtrd')
+                          .updateData({'animalNumber': 0});
+                    }
+                  });
+                },
+              ),
       ),
       ListTile(
         leading: Icon(Icons.chevron_right),
