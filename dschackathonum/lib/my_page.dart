@@ -174,8 +174,8 @@ Widget _buildBottom() {
         leading: Icon(Icons.chevron_right),
         title: Text('animal select'),
         trailing: DropdownButton(
-                value: _selectedValue,
-                items: _valueList.map(
+                value: _selectedAnimal,
+                items: _animalList.map(
                   (value) {
                     return DropdownMenuItem(
                       value: value,
@@ -185,7 +185,7 @@ Widget _buildBottom() {
                 ).toList(),
                 onChanged: (value) {
                   setState(() {
-                    _selectedValue = value;
+                    _selectedAnimal = value;
                     if (value == 'Polar Bear') {
                       Firestore.instance
                           .collection('userData')
