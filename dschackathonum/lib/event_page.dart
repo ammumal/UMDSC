@@ -31,7 +31,7 @@ class _EventState extends State<Event> {
         backgroundColor: Colors.white,
         centerTitle: true,
         title: Text(
-          '이벤트',
+          'Event',
           style: TextStyle(color: Colors.green),
         ),
       ),
@@ -89,14 +89,17 @@ class _EventState extends State<Event> {
                   SizedBox(width: 15,),
                   Image.network(event.main_img, width: 150, height: 150,),
                   SizedBox(width: 15,),
-                  Expanded(child: Text(event.title,)),
+                  Expanded(child: Padding(
+                    padding: const EdgeInsets.only(right: 8.0,),
+                    child: Text(event.title,),
+                  )),
                   // AutoSizeText(event.subtitle,),
                 ],
               ),
               SizedBox(height: 15,),
               Align(
                   alignment: Alignment.bottomCenter,
-                  child: Text('마감 날짜: ' + event.date)),
+                  child: Text('End date: ' + event.date)),
             ],
           ),
         ),
@@ -170,82 +173,84 @@ class _EventDetailState extends State<EventDetail> {
             .updateData({'monthlyCountE': 1 + doc2['monthlyCountE']});
     }
 
-    return Center(
-      child: Column(
-        children: <Widget>[
-          SizedBox(height: 15,),
-          Image.network(
-            doc['main_img'], width: 300, height: 300,),
-          SizedBox(height: 30,),
-          Padding(
-            padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-            child: Text(
-                doc['subtitle'],
-                style: TextStyle(fontSize: 16.0),
-            ),
-          ),
-          SizedBox(height: 15,),
-          Padding(
-            padding: const EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
-            child: Row(
-              children: <Widget>[
-                Text('보상: ',
+    return SingleChildScrollView(
+      child: Center(
+        child: Column(
+          children: <Widget>[
+            SizedBox(height: 15,),
+            Image.network(
+              doc['main_img'], width: 300, height: 300,),
+            SizedBox(height: 30,),
+            Padding(
+              padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+              child: Text(
+                  doc['subtitle'],
                   style: TextStyle(fontSize: 16.0),
-                ),
-                Text(doc['reward'],
-                  style: TextStyle(fontSize: 16.0),
-                ),
-              ],
+              ),
             ),
-          ),
-          RaisedButton(
-            onPressed: () {
-              if(!doc['is_done']) {
-                clearEvent();
-                showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                          title: Text('You complete this event!'),
-                          content: Text('TAP \'OK\' and go to the event website'),
-                          actions: <Widget>[
-                            FlatButton(
-                                child: Text('OK'),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
+            SizedBox(height: 15,),
+            Padding(
+              padding: const EdgeInsets.only(left: 20.0, right: 20.0, bottom: 20.0),
+              child: Row(
+                children: <Widget>[
+                  Expanded(
+                      child: Text('[Reward]\n' + doc['reward'],
+                      style: TextStyle(fontSize: 16.0),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            RaisedButton(
+              onPressed: () {
+                if(!doc['is_done']) {
+                  clearEvent();
+                  showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                            title: Text('You complete this event!'),
+                            content: Text('TAP \'OK\' and go to the event website'),
+                            actions: <Widget>[
+                              FlatButton(
+                                  child: Text('OK'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
 
-                                  //이벤트 페이지 이동
+                                    //이벤트 페이지 이동
 
-                                })
-                          ]);
-                    });
-              } else {
-                showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                          title: Text('You\'ve already completed this event!'),
-                          content: Text('TAP \'OK\' and go to the event website.'),
-                          actions: <Widget>[
-                            FlatButton(
-                                child: Text('OK'),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
+                                  })
+                            ]);
+                      });
+                } else {
+                  showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                            title: Text('You\'ve already completed this event!'),
+                            content: Text('TAP \'OK\' and go to the event website.'),
+                            actions: <Widget>[
+                              FlatButton(
+                                  child: Text('OK'),
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
 
-                                  //이벤트 페이지 이동
+                                    //이벤트 페이지 이동
 
-                                })
-                          ]);
-                    });
-              }
-            },
-            child: Text('참여하기',
-                style: TextStyle(fontSize: 20.0, color: Colors.white)),
-            color: Colors.lightGreen,
-          )
-        ],
+                                  })
+                            ]);
+                      });
+                }
+              },
+              child: Text('Participate in this event',
+                  style: TextStyle(fontSize: 20.0, color: Colors.white)),
+              color: Colors.lightGreen,
+            ),
+            SizedBox(height: 15,),
+          ],
+        ),
       ),
     );
   }

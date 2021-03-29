@@ -26,7 +26,7 @@ class _TipsState extends State<Tips> {
         backgroundColor: Colors.white,
         centerTitle: true,
         title: Text(
-          '정보 & 꿀팁',
+          'Tips',
           style: TextStyle(color: Colors.green),
         ),
       ),

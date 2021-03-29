@@ -180,7 +180,7 @@ Widget _buildTop() {
     padding: const EdgeInsets.only(left: 14, right: 14, top: 10, bottom: 10),
     child: Column(
       children: <Widget>[
-        Text('GREEN DAY에 오신 것을 환영합니다.',
+        Text('Welcome to GREEN DAY!',
             style: TextStyle(fontSize: 20, color: Colors.teal[700]))
         /*
         TextField(
